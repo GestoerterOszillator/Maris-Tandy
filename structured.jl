@@ -127,7 +127,7 @@ realp = plot(exp.(t), A, xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 
     yticks = 0.4:0.4:2.4, label = L"A(p^2)", xlabel = L"p^2")
 realp = plot!(exp.(t), B, label = L"B(p^2)")
 realp = plot!(exp.(t), B./A, label = L"M(p^2)")
-savefig(realp, address * "D1.pdf")
+savefig(realp, address * "realp.pdf")
 
 function Teil_Zwei(t, A, B)
     # fitter(x, p) = @. p[1] .+ (p[2] - p[1]) ./ (1 .+ exp.(-p[3] .* (x .- p[4]))).^(1 / p[5]) - p[6] * x
@@ -141,6 +141,7 @@ function Teil_Zwei(t, A, B)
 
     # A_itp(x) = @. par_A[1] .+ (par_A[2] - par_A[1]) ./ (1 .+ exp.(-par_A[3] .* (x .- par_A[4]))).^(1 / par_A[5]) - par_A[6] * x
     # B_itp(x) = @. par_B[1] .+ (par_B[2] - par_B[1]) ./ (1 .+ exp.(-par_B[3] .* (x .- par_B[4]))).^(1 / par_B[5]) - par_B[6] * x
+    # return A_itp, B_itp
     return Spline1D(t, A, k = 3), Spline1D(t, B, k = 3)
 end
 
@@ -197,15 +198,15 @@ function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; D = 0.93, w = 0.16)
         return Z_2^2 * 16pi/(2pi)^3 * (sum(integrand1) + sum(integrand2))
     end
 
-    p2 = Complex.(-10 : 0.02 : -0.01)
+    p2 = Complex.(-10 : 0.04 : -0.01)
     AA = Z_2 .+ Sigma_A.(p2)
     BB = Z_4m .+ Sigma_B.(p2)
     for (AAA, BBB) in zip(AA, BB)
-        if imag(AAA) > real(AAA)*1e-3
-            throw(error("Schlimm bei A"))
+        if abs(imag(AAA)) > abs(real(AAA)*1e-3)
+            throw(error("Schlimm bei A: ", AAA))
         end
-        if imag(BBB) > real(BBB)*1e-3
-            throw(error("Schlimm bei B"))
+        if abs(imag(BBB)) > abs(real(BBB)*1e-3)
+            throw(error("Schlimm bei B: ", BBB))
         end
     end
     MM = real.(BB)./real.(AA)
@@ -213,4 +214,5 @@ function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; D = 0.93, w = 0.16)
     return plot(real.(p2)[mask], MM[mask], xlims = (-10, 0), ylims = (0, 600), label = L"M(p^2)", xlabel = L"p^2")
 end
 
-@time Teil_Drei(Teil_Zwei(t, A, B)..., Z_2, Z_4m)
+@time imagp = Teil_Drei(Teil_Zwei(t, A, B)..., Z_2, Z_4m)
+savefig(imagp, address * "imagp.pdf"); imagp

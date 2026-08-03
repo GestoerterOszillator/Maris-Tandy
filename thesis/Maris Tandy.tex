@@ -10,6 +10,7 @@
 \sisetup{per-mode=symbol}
 \usepackage{slashed}
 \usepackage{bm}
+\usepackage{bbm}
 
 % Graphics, Diagrams & Tables
 \usepackage{graphicx}
@@ -108,27 +109,6 @@ Supervisor: Prof. Dr. Christian Fischer \\
 
 \chapter{Theory} \label{ch:2}
 
-\section{Herleitung Esther}
-
-\begin{align}
-	A(p^2) &= Z_2 + \frac{16\pi}{3}\, Z_2^2 \int \dbar^4 q \; \frac{A(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2} \\
-	B(p^2) &= Z_4m + 16\pi \, Z_2^2 \int \dbar^4 q \; \frac{B(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2}
-\end{align}
-
-\begin{align}
-	\alpha(k^2) &= \alpha_\textrm{UV}(k^2) + \alpha_\textrm{IR}(k^2) \\
-	\alpha_\textrm{IR}(k^2) &= \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} \\
-	\alpha_\textrm{UV}(k^2) &= \frac{2\pi \gamma_m \left(1-e^{-k^2}\right)}{\ln\left[e^2-1+\left(1+\tfrac{k^2}{\Lambda_\mathrm{QCD}^2}\right)^2\right]}
-\end{align}
-
-\begin{align}
-	\Xi_A(p, q) =& \int\limits_0^\pi \dd \psi \; \sin^2\psi \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \\
-	\Xi_B(p, q) =& \int\limits_0^\pi \dd \psi \; \sin^2\psi \frac{\alpha(k^2)}{k^2} \\
-	&k = p - q, \quad (pq) = |p|\.|q|\. \cos\psi
-\end{align}
-
-\section{Herleitung Stephan}
-
 \begin{align}
 	\begin{tikzpicture}
 		\begin{feynman}
@@ -165,19 +145,97 @@ Supervisor: Prof. Dr. Christian Fischer \\
 	\end{tikzpicture}
 \end{align}
 
+\section{Herleitung Esther}
+
+\begin{align}
+	S(p) = G^{(2)}(p) = \int \dd^4x\; e^{-\ii px}\bra{\Omega} \mathrm{T} \bar\psi(x)\psi(0)\ket{\Omega}
+\end{align}
+
+\begin{align}
+	S_{\alpha\beta ab AB}(p) = S_{\alpha\beta}(p)\otimes \delta^{ab}\otimes \delta^{AB}
+\end{align}
+
+\begin{align}
+	S_{\alpha\beta}(p) = -\ii\sigma_v(p) \p + \sigma_s(p) \mathbbm 1_D
+\end{align}
+
+\begin{align}
+	S^{-1}(p) = \ii \p A(p^2) + B(p^2) \mathbbm 1_D
+\end{align}
+
+\begin{align}
+	S^{-1}(p^2) = S_0^{-1}(p^2) + \int \dbar^4 q \; D^{ab}_{\mu\nu}(p-q)\left( g\frac{\lambda^a}{2}\g_\mu \right)S(q^2)\left( g\Gamma^b_\nu(p,q) \right)
+\end{align}
+
+
+
+\begin{align}
+	A(p^2) &= Z_2 + \frac{16\pi}{3}\, Z_2^2 \int \dbar^4 q \; \frac{A(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2} \\
+	B(p^2) &= Z_4m + 16\pi \, Z_2^2 \int \dbar^4 q \; \frac{B(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2}
+\end{align}
+
+\begin{align}
+	\alpha(k^2) &= \alpha_\textrm{UV}(k^2) + \alpha_\textrm{IR}(k^2) \\
+	\alpha_\textrm{IR}(k^2) &= \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} \\
+	\alpha_\textrm{UV}(k^2) &= \frac{2\pi \gamma_m \left(1-e^{-k^2}\right)}{\ln\left[e^2-1+\left(1+\tfrac{k^2}{\Lambda_\mathrm{QCD}^2}\right)^2\right]}
+\end{align}
+
+\begin{align}
+	\Xi_A(p, q) =& \int\limits_0^\pi \dd \psi \; \sin^2\psi \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \\
+	\Xi_B(p, q) =& \int\limits_0^\pi \dd \psi \; \sin^2\psi \frac{\alpha(k^2)}{k^2} \\
+	&k = p - q, \quad (pq) = |p|\.|q|\. \cos\psi
+\end{align}
+
+\section{Herleitung Stephan}
+
+\begin{align}
+	S^{-1}(p) = Z_2 S_0^{-1}(p) - \Sigma(p)
+\end{align}
+
+\begin{align}
+	\Sigma(p) = -Z_{1F}(\mu^2, \Lambda^2)g^2C_f\int \dbar^4q \; \g_\mu S(q)\Gamma_\nu(p,q) D^{\mu\nu}(p-q)
+\end{align}
+
+\begin{align}
+	D^{\mu\nu}(k) = T^{\mu\nu}(k)\frac{Z(k^2)}{k^2}, \quad T^{\mu\nu}(k) = \delta^{\mu\nu} - k^\mu k^\nu/k^2
+\end{align}
+
+
+\begin{align}
+	\Sigma(p) = 4\pi C_f Z_2^2\int \dbar^4 q\; \g_\mu S(q)\g_\nu T^{\mu\nu} \frac{\alpha(k^2)}{k^2}
+\end{align}
+\begin{align}
+	S^{-1}(p) = Z_2(\ii\p + Z_m m_c) + 4\pi C_f Z_2^2\int \dbar^4 q\; \g_\mu S(q)\g_\nu T^{\mu\nu} \frac{\alpha(k^2)}{k^2}
+\end{align}
+$C_f = \frac{4}{3}$
+\begin{align}
+	S^{-1}(p) = \ii \p A(p^2) + B(p^2)
+\end{align}
+
+\begin{align}
+	A(p^2) &= Z_2 + \frac{16\pi}{3}\, Z_2^2 \int \dbar^4 q \; \frac{A(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2} \\
+	B(p^2) &= Z_4m + 16\pi \, Z_2^2 \int \dbar^4 q \; \frac{B(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2}
+\end{align}
+
+\begin{align}
+	\alpha(k^2) &= \alpha_\textrm{UV}(k^2) + \alpha_\textrm{IR}(k^2) \\
+	\alpha_\textrm{IR}(k^2) &= \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} \\
+	\alpha_\textrm{UV}(k^2) &= \frac{2\pi \gamma_m \left(1-e^{-k^2}\right)}{\ln\left[e^2-1+\left(1+ k^2/\Lambda_\mathrm{QCD}^2\right)^2\right]}
+\end{align}
+
 \begin{figure}[H]
 	\centering
 	\begin{minipage}{0.9\linewidth}
 		\centering
 		\begin{subfigure}[t]{0.49\textwidth}
 			\centering
-			\includegraphics[width=\textwidth]{images/D1.pdf}
+			\includegraphics[width=\textwidth]{images/realp.pdf}
 			\caption{\phantom{i}}
 			\label{fig:dcs1}
 		\end{subfigure}\hfill
 		\begin{subfigure}[t]{0.49\textwidth}
 			\centering
-			\includegraphics[width=\textwidth]{images/400_100.pdf}
+			\includegraphics[width=\textwidth]{images/imagp.pdf}
 			\caption{\phantom{i}}
 			\label{fig:dcs2}
 		\end{subfigure}
