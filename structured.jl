@@ -5,9 +5,8 @@ using FastGaussQuadrature
 using LaTeXStrings
 using ProgressMeter
 using Dierckx
-using Interpolations
-using LsqFit
 using SpecialFunctions
+using Memoize
 pgfplotsx() # pgfplotsx() or gr()
 default(
     fontfamily = "Computer Modern",
@@ -22,8 +21,8 @@ default(
     framestyle = :box,
     color_palette = palette(:tab10)
 )
-const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
-# const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
+# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
 
 # Constants
 const m = 0.0037
@@ -39,7 +38,7 @@ pk(p, q, z) = p^2 - p*q*z
 qk(p, q, z) = p*q*z - q^2
 k2(p, q, z) = p^2 + q^2 - 2*p*q*z
 
-function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, angular_steps::Int = 20)
+function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 300, angular_steps::Int = 60)
     # Integration Grids
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausschebyshevu(angular_steps) # Chebyshev second kind
@@ -59,7 +58,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, an
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
 
     # Angular Integrals over z = cos(psi)
-    function z_intA(p, q)
+    @memoize Dict function z_intA(p::Float64, q::Float64)
         K2 = k2.(p, q, z)
         if PV == true
             integrand = @. w_z * ( p*q*z + 2*pk(p, q, z)*qk(p, q, z)/K2 ) * alpha(K2) / K2 * Lambda_PV^2 / (K2 + Lambda_PV^2)
@@ -69,7 +68,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, an
         return sum(integrand)
     end
 
-    function z_intB(p, q)
+    @memoize Dict function z_intB(p::Float64, q::Float64)
         K2 = k2.(p, q, z)
         if PV == true
             integrand = @. w_z * alpha(K2) / K2 * Lambda_PV^2 / (K2 + Lambda_PV^2)
@@ -120,81 +119,48 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, an
     return t, A, B, Z_2, Z_4m
 end
 
-t, A, B, Z_2, Z_4m = Teil_Eins(0.16, 0.93, false)
+t, A, B, _, _ = Teil_Eins(0.4, 1.0, true)
 
 # Plots
-realp = plot(exp.(t), A, xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.4), 
-    yticks = 0.4:0.4:2.4, label = L"A(p^2)", xlabel = L"p^2")
-realp = plot!(exp.(t), B, label = L"B(p^2)")
-realp = plot!(exp.(t), B./A, label = L"M(p^2)")
+realp = plot(exp.(t), A, xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
+    yticks = 0.4:0.4:2.0, label = L"A(p^2)", xlabel = L"$p^2 \; \left[\mathrm{GeV^2}\right]$")
+realp = plot!(exp.(t), B, label = L"$B(p^2) \; \left[\mathrm{GeV}\right]$")
+realp = plot!(exp.(t), B./A, label = L"$M(p^2) \; \left[\mathrm{GeV}\right]$")
 savefig(realp, address * "realp.pdf")
 
-function Teil_Zwei(t, A, B)
-    # fitter(x, p) = @. p[1] .+ (p[2] - p[1]) ./ (1 .+ exp.(-p[3] .* (x .- p[4]))).^(1 / p[5]) - p[6] * x
-    # par_A = curve_fit(fitter, t, A, [2.24, 1.,     1.27, -0.01, 1.1,  0.001  ]).param
-    # par_B = curve_fit(fitter, t, B, [1.28, 0.0035, 2.5,  -0.58, 2.54, 0.00026]).param
-
-    # println("max. abs. err. A: ", maximum(abs.(A - fitter(t, par_A))))
-    # println("max. rel. err. A: ", maximum(abs.(A - fitter(t, par_A)) ./ A))
-    # println("max. abs. err. B: ", maximum(abs.(B - fitter(t, par_B))))
-    # println("max. rel. err. B: ", maximum(abs.(B - fitter(t, par_B)) ./ B))
-
-    # A_itp(x) = @. par_A[1] .+ (par_A[2] - par_A[1]) ./ (1 .+ exp.(-par_A[3] .* (x .- par_A[4]))).^(1 / par_A[5]) - par_A[6] * x
-    # B_itp(x) = @. par_B[1] .+ (par_B[2] - par_B[1]) ./ (1 .+ exp.(-par_B[3] .* (x .- par_B[4]))).^(1 / par_B[5]) - par_B[6] * x
-    # return A_itp, B_itp
-    return Spline1D(t, A, k = 3), Spline1D(t, B, k = 3)
-end
+Teil_Zwei(t, A, B) = Spline1D(t, A, k = 3), Spline1D(t, B, k = 3)
 
 function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; w = 0.16, D = 0.93)
     alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / log(exp(2) - 1 + (1 + k2 / Lambda_QCD^2)^2)
     alpha_IR(k2) = D/w^6 * pi * k2^2 * exp(-k2 / w^2)
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
 
-    z, w_z = gausslegendre(100)
-    z1  = 0.5 * z .- 0.5
-    z2  = 0.5 * z .+ 0.5
-    w_z = 0.5 * w_z;
-
+    z, w_z = gausslegendre(16)
+    
     function z_intA(p, q)
-        K1 = k2.(p, q, z1)
-        K2 = k2.(p, q, z2)
-        integrand1 = @. w_z * sqrt(1-z1^2) * (p*q*z1 + 2*(p^2 - p*q*z1)*(p*q*z1 - q^2)/K1) * alpha(K1) / K1
-        integrand2 = @. w_z * sqrt(1-z2^2) * (p*q*z2 + 2*(p^2 - p*q*z2)*(p*q*z2 - q^2)/K2) * alpha(K2) / K2
-        return sum(integrand1) + sum(integrand2)
+        K = k2.(p, q, z)
+        integrand = @. w_z * sqrt(1-z^2) * (p*q*z + 2*(p^2 - p*q*z)*(p*q*z - q^2)/K) * alpha(K) / K
+        return sum(integrand)
     end
 
     function z_intB(p, q)
-        K1 = k2.(p, q, z1)
-        K2 = k2.(p, q, z2)
-        integrand1 = @. w_z * sqrt(1-z1^2) * alpha(K1) / K1
-        integrand2 = @. w_z * sqrt(1-z2^2) * alpha(K2) / K2
-        return sum(integrand1) + sum(integrand2)
+        K = k2.(p, q, z)
+        integrand = @. w_z * sqrt(1-z^2) * alpha(K) / K
+        return sum(integrand)
     end
 
-    x, w_x = gausslegendre(300)
+    x, w_x = gausslegendre(128)
+    t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
+    w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
 
     function Sigma_A(p2)
-        t1 = 0.5 * (log(abs(p2)) - log(epsilon2)) * x .+ 0.5 * (log(abs(p2)) + log(epsilon2))
-        w_t1 = 0.5 * (log(abs(p2)) - log(epsilon2)) * w_x
-
-        t2 = 0.5 * (log(Lambda2) - log(abs(p2))) * x .+ 0.5 * (log(Lambda2) + log(abs(p2)))
-        w_t2 = 0.5 * (log(Lambda2) - log(abs(p2))) * w_x
-
-        integrand1 = @. w_t1 * exp(2*t1) * A_itp(t1) / (exp(t1) * A_itp(t1)^2 + B_itp(t1)^2) * z_intA(sqrt(p2), exp(t1/2))
-        integrand2 = @. w_t2 * exp(2*t2) * A_itp(t2) / (exp(t2) * A_itp(t2)^2 + B_itp(t2)^2) * z_intA(sqrt(p2), exp(t2/2))
-        return Z_2^2 * 16pi/(3*(2pi)^3 * p2) * (sum(integrand1) + sum(integrand2))
+        integrand = @. w_t * exp(2*t) * A_itp(t) / (exp(t) * A_itp(t)^2 + B_itp(t)^2) * z_intA(sqrt(p2), exp(t/2))
+        return Z_2^2 * 16pi/(3*(2pi)^3 * p2) * sum(integrand)
     end
 
     function Sigma_B(p2)
-        t1 = 0.5 * (log(abs(p2)) - log(epsilon2)) * x .+ 0.5 * (log(abs(p2)) + log(epsilon2))
-        w_t1 = 0.5 * (log(abs(p2)) - log(epsilon2)) * w_x
-
-        t2 = 0.5 * (log(Lambda2) - log(abs(p2))) * x .+ 0.5 * (log(Lambda2) + log(abs(p2)))
-        w_t2 = 0.5 * (log(Lambda2) - log(abs(p2))) * w_x
-
-        integrand1 = @. w_t1 * exp(2*t1) * B_itp(t1) / (exp(t1) * A_itp(t1)^2 + B_itp(t1)^2) * z_intB(sqrt(p2), exp(t1/2))
-        integrand2 = @. w_t2 * exp(2*t2) * B_itp(t2) / (exp(t2) * A_itp(t2)^2 + B_itp(t2)^2) * z_intB(sqrt(p2), exp(t2/2))
-        return Z_2^2 * 16pi/(2pi)^3 * (sum(integrand1) + sum(integrand2))
+        integrand = @. w_t * exp(2*t) * B_itp(t) / (exp(t) * A_itp(t)^2 + B_itp(t)^2) * z_intB(sqrt(p2), exp(t/2))
+        return Z_2^2 * 16pi/(2pi)^3 * sum(integrand)
     end
 
     p2 = Complex.(-10 : 0.04 : -0.01)
@@ -208,10 +174,11 @@ function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; w = 0.16, D = 0.93)
             throw(error("Schlimm bei B: ", BBB))
         end
     end
-    MM = real.(BB./AA)
+    MM = abs.(BB./AA)
     mask = isfinite.(MM) .& (abs.(MM) .< 1e4)
     return plot(real.(p2)[mask], MM[mask], xlims = (-10, 0), ylims = (0, 600), label = L"M(p^2)", xlabel = L"p^2")
 end
 
+t, A, B, Z_2, Z_4m = Teil_Eins(0.16, 0.93, false)
 @time imagp = Teil_Drei(Teil_Zwei(t, A, B)..., Z_2, Z_4m)
 savefig(imagp, address * "imagp.pdf"); imagp
