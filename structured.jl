@@ -22,8 +22,8 @@ default(
     framestyle = :box,
     color_palette = palette(:tab10)
 )
-# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/images/"
-const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/";
+const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+# const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
 
 # Constants
 const m = 0.0037
@@ -39,7 +39,7 @@ pk(p, q, z) = p^2 - p*q*z
 qk(p, q, z) = p*q*z - q^2
 k2(p, q, z) = p^2 + q^2 - 2*p*q*z
 
-function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, angular_steps::Int = 80)
+function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, angular_steps::Int = 20)
     # Integration Grids
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausschebyshevu(angular_steps) # Chebyshev second kind
@@ -102,14 +102,14 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 200, an
     end
 
     # Iteration Loop
-    max_iter = 200
+    max_iter = 100
     p = Progress(max_iter, desc = "Berechne...")
 
     for i in 1:max_iter
         A, B, Z_2, Z_4m, max_error = update(A, B, Z_2, Z_4m)
         next!(p)
         if max_error < 1e-8
-            println("\nFinished: i = ", i)
+            println()
             break
         end
         if i == max_iter
@@ -145,8 +145,7 @@ function Teil_Zwei(t, A, B)
     return Spline1D(t, A, k = 3), Spline1D(t, B, k = 3)
 end
 
-function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; D = 0.93, w = 0.16)
-    # Gluon stuff
+function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; w = 0.16, D = 0.93)
     alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / log(exp(2) - 1 + (1 + k2 / Lambda_QCD^2)^2)
     alpha_IR(k2) = D/w^6 * pi * k2^2 * exp(-k2 / w^2)
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
@@ -172,7 +171,7 @@ function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; D = 0.93, w = 0.16)
         return sum(integrand1) + sum(integrand2)
     end
 
-    x, w_x = gausslegendre(500)
+    x, w_x = gausslegendre(300)
 
     function Sigma_A(p2)
         t1 = 0.5 * (log(abs(p2)) - log(epsilon2)) * x .+ 0.5 * (log(abs(p2)) + log(epsilon2))
@@ -202,14 +201,14 @@ function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; D = 0.93, w = 0.16)
     AA = Z_2 .+ Sigma_A.(p2)
     BB = Z_4m .+ Sigma_B.(p2)
     for (AAA, BBB) in zip(AA, BB)
-        if abs(imag(AAA)) > abs(real(AAA)*1e-3)
+        if abs(imag(AAA)) > abs(real(AAA)*1e0)
             throw(error("Schlimm bei A: ", AAA))
         end
-        if abs(imag(BBB)) > abs(real(BBB)*1e-3)
+        if abs(imag(BBB)) > abs(real(BBB)*1e0)
             throw(error("Schlimm bei B: ", BBB))
         end
     end
-    MM = real.(BB)./real.(AA)
+    MM = real.(BB./AA)
     mask = isfinite.(MM) .& (abs.(MM) .< 1e4)
     return plot(real.(p2)[mask], MM[mask], xlims = (-10, 0), ylims = (0, 600), label = L"M(p^2)", xlabel = L"p^2")
 end
