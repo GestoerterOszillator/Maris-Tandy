@@ -1,12 +1,7 @@
-using LinearAlgebra
 using Plots
-using QuadGK
 using FastGaussQuadrature
 using LaTeXStrings
 using ProgressMeter
-using Dierckx
-using SpecialFunctions
-using Memoize
 pgfplotsx() # pgfplotsx() or gr()
 default(
     fontfamily = "Computer Modern",
@@ -21,8 +16,8 @@ default(
     framestyle = :box,
     color_palette = palette(:tab10)
 )
-# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
-const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
+const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+# const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
 
 # Constants
 const m = 0.0037
@@ -56,7 +51,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     alpha(k2::Float64) = alpha_IR(k2) + alpha_UV(k2)
 
     # Angular Integrals over z = cos(psi)
-    @memoize Dict function z_intA(p::Float64, q::Float64)
+    function z_intAA(p::Float64, q::Float64)
         if PV == true
             integrand = @. w_z * sqrt(1-z^2) * (p*q*z + 2*(p^2 - p*q*z)*(p*q*z - q^2)/k2(p, q, z)) * alpha(k2(p, q, z)) * Lambda_PV^2 / (k2(p, q, z) + Lambda_PV^2)
         else
@@ -65,13 +60,43 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
         return sum(integrand)
     end
 
-    @memoize Dict function z_intB(p::Float64, q::Float64)
+    zA_cache = Dict{Tuple{Float64,Float64}, Float64}()
+
+    function z_intA(p::Float64, q::Float64)
+        key = (p, q)
+
+        if haskey(zA_cache, key)
+            return zA_cache[key]
+        end
+
+        result = z_intAA(p, q)
+        zA_cache[key] = result
+
+        return result
+    end
+
+    function z_intBB(p::Float64, q::Float64)
         if PV == true
             integrand = @. w_z * sqrt(1-z^2) * alpha(k2(p, q, z)) * Lambda_PV^2 / (k2(p, q, z) + Lambda_PV^2)
         else
             integrand = @. w_z * sqrt(1-z^2) * alpha(k2(p, q, z)) 
         end
         return sum(integrand)
+    end
+
+    zB_cache = Dict{Tuple{Float64,Float64}, Float64}()
+
+    function z_intB(p::Float64, q::Float64)
+        key = (p, q)
+
+        if haskey(zB_cache, key)
+            return zB_cache[key]
+        end
+
+        result = z_intBB(p, q)
+        zB_cache[key] = result
+
+        return result
     end
 
     # Final Radial Integrals
@@ -161,10 +186,10 @@ function Teil_Zwei(t, A, B, Z_2, Z_4m; w = 0.16, D = 0.93)
     AA = Z_2 .+ Sigma_A.(p2)
     BB = Z_4m .+ Sigma_B.(p2)
     for (AAA, BBB) in zip(AA, BB)
-        if abs(imag(AAA)) > abs(real(AAA)*1e0)
+        if abs(imag(AAA)) > abs(real(AAA)*1e-3)
             throw(error("Schlimm bei A: ", AAA))
         end
-        if abs(imag(BBB)) > abs(real(BBB)*1e0)
+        if abs(imag(BBB)) > abs(real(BBB)*1e-3)
             throw(error("Schlimm bei B: ", BBB))
         end
     end
