@@ -33,15 +33,10 @@ const Lambda_QCD = 0.234
 const gamma_m = 0.48 # 12/(33 - 2 * Nf{4}) = 0.48
 const mu = 19.0
 
-# Dot Products
-pk(p, q, z) = p^2 - p*q*z
-qk(p, q, z) = p*q*z - q^2
-k2(p, q, z) = p^2 + q^2 - 2*p*q*z
-
-function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 300, angular_steps::Int = 60)
+function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, angular_steps::Int = 64)
     # Integration Grids
     x, w_x = gausslegendre(radial_steps)
-    z, w_z = gausschebyshevu(angular_steps) # Chebyshev second kind
+    z, w_z = gausslegendre(angular_steps) # Chebyshev second kind
 
     t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
     w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
@@ -52,28 +47,29 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 300, an
     Z_2 = 1
     Z_4m = 0.7 * m
 
+    # Dot Products
+    k2(p::Float64, q::Float64, z::Float64) = p^2 + q^2 - 2*p*q*z
+
     # Gluon stuff
-    alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / log(exp(2) - 1 + (1 + k2 / Lambda_QCD^2)^2)
-    alpha_IR(k2) = D/w^6 * pi * k2^2 * exp(-k2 / w^2)
-    alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
+    alpha_UV(k2::Float64) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
+    alpha_IR(k2::Float64) = D/w^6 * pi * k2 * exp(-k2 / w^2)
+    alpha(k2::Float64) = alpha_IR(k2) + alpha_UV(k2)
 
     # Angular Integrals over z = cos(psi)
     @memoize Dict function z_intA(p::Float64, q::Float64)
-        K2 = k2.(p, q, z)
         if PV == true
-            integrand = @. w_z * ( p*q*z + 2*pk(p, q, z)*qk(p, q, z)/K2 ) * alpha(K2) / K2 * Lambda_PV^2 / (K2 + Lambda_PV^2)
+            integrand = @. w_z * sqrt(1-z^2) * (p*q*z + 2*(p^2 - p*q*z)*(p*q*z - q^2)/k2(p, q, z)) * alpha(k2(p, q, z)) * Lambda_PV^2 / (k2(p, q, z) + Lambda_PV^2)
         else
-            integrand = @. w_z * ( p*q*z + 2*pk(p, q, z)*qk(p, q, z)/K2 ) * alpha(K2) / K2
+            integrand = @. w_z * sqrt(1-z^2) * (p*q*z + 2*(p^2 - p*q*z)*(p*q*z - q^2)/k2(p, q, z)) * alpha(k2(p, q, z))
         end
         return sum(integrand)
     end
 
     @memoize Dict function z_intB(p::Float64, q::Float64)
-        K2 = k2.(p, q, z)
         if PV == true
-            integrand = @. w_z * alpha(K2) / K2 * Lambda_PV^2 / (K2 + Lambda_PV^2)
+            integrand = @. w_z * sqrt(1-z^2) * alpha(k2(p, q, z)) * Lambda_PV^2 / (k2(p, q, z) + Lambda_PV^2)
         else
-            integrand = @. w_z * alpha(K2) / K2
+            integrand = @. w_z * sqrt(1-z^2) * alpha(k2(p, q, z)) 
         end
         return sum(integrand)
     end
@@ -115,11 +111,10 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 300, an
             throw(error("Failed: max_error = ", max_error))
         end
     end
-
     return t, A, B, Z_2, Z_4m
 end
 
-t, A, B, _, _ = Teil_Eins(0.4, 1.0, true)
+@time t, A, B, _, _ = Teil_Eins(0.4, 1.0, true; angular_steps = 64)
 
 # Plots
 realp = plot(exp.(t), A, xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
@@ -128,38 +123,37 @@ realp = plot!(exp.(t), B, label = L"$B(p^2) \; \left[\mathrm{GeV}\right]$")
 realp = plot!(exp.(t), B./A, label = L"$M(p^2) \; \left[\mathrm{GeV}\right]$")
 savefig(realp, address * "realp.pdf")
 
-Teil_Zwei(t, A, B) = Spline1D(t, A, k = 3), Spline1D(t, B, k = 3)
+function Teil_Zwei(t, A, B, Z_2, Z_4m; w = 0.16, D = 0.93)
+    k2(p::ComplexF64, q::Float64, z::Float64) = p^2 + q^2 - 2*p*q*z
 
-function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; w = 0.16, D = 0.93)
-    alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / log(exp(2) - 1 + (1 + k2 / Lambda_QCD^2)^2)
-    alpha_IR(k2) = D/w^6 * pi * k2^2 * exp(-k2 / w^2)
+    alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
+    alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
 
     z, w_z = gausslegendre(16)
     
-    function z_intA(p, q)
+    function z_intA(p::ComplexF64, q::Float64)
         K = k2.(p, q, z)
-        integrand = @. w_z * sqrt(1-z^2) * (p*q*z + 2*(p^2 - p*q*z)*(p*q*z - q^2)/K) * alpha(K) / K
+        integrand = @. w_z * sqrt(1-z^2) * (p*q*z + 2*(p^2 - p*q*z)*(p*q*z - q^2)/K) * alpha(K)
         return sum(integrand)
     end
 
-    function z_intB(p, q)
+    function z_intB(p::ComplexF64, q::Float64)
         K = k2.(p, q, z)
-        integrand = @. w_z * sqrt(1-z^2) * alpha(K) / K
+        integrand = @. w_z * sqrt(1-z^2) * alpha(K)
         return sum(integrand)
     end
 
-    x, w_x = gausslegendre(128)
-    t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
+    _, w_x = gausslegendre(length(t))
     w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
 
     function Sigma_A(p2)
-        integrand = @. w_t * exp(2*t) * A_itp(t) / (exp(t) * A_itp(t)^2 + B_itp(t)^2) * z_intA(sqrt(p2), exp(t/2))
+        integrand = @. w_t * exp(2*t) * A / (exp(t) * A^2 + B^2) * z_intA(sqrt(p2), exp(t/2))
         return Z_2^2 * 16pi/(3*(2pi)^3 * p2) * sum(integrand)
     end
 
     function Sigma_B(p2)
-        integrand = @. w_t * exp(2*t) * B_itp(t) / (exp(t) * A_itp(t)^2 + B_itp(t)^2) * z_intB(sqrt(p2), exp(t/2))
+        integrand = @. w_t * exp(2*t) * B / (exp(t) * A^2 + B^2) * z_intB(sqrt(p2), exp(t/2))
         return Z_2^2 * 16pi/(2pi)^3 * sum(integrand)
     end
 
@@ -175,10 +169,10 @@ function Teil_Drei(A_itp, B_itp, Z_2, Z_4m; w = 0.16, D = 0.93)
         end
     end
     MM = abs.(BB./AA)
-    mask = isfinite.(MM) .& (abs.(MM) .< 1e4)
-    return plot(real.(p2)[mask], MM[mask], xlims = (-10, 0), ylims = (0, 600), label = L"M(p^2)", xlabel = L"p^2")
+    mask = isfinite.(MM) .& (abs.(MM) .< 1e2)
+    return plot(real.(p2)[mask], MM[mask], xlims = (-10, 0), ylims = (0, 10), label = L"M(p^2)", xlabel = L"p^2")
 end
 
-t, A, B, Z_2, Z_4m = Teil_Eins(0.16, 0.93, false)
-@time imagp = Teil_Drei(Teil_Zwei(t, A, B)..., Z_2, Z_4m)
-savefig(imagp, address * "imagp.pdf"); imagp
+imagp = Teil_Zwei(Teil_Eins(0.16, 0.93, false; angular_steps = 16)...)
+savefig(imagp, address * "imagp.pdf")
+imagp
