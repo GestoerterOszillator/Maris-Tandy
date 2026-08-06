@@ -1,7 +1,5 @@
 \documentclass{book}
 
-% Graph - Nicht findbarer idealer gKNL impliziert wichtigen Einfluss von ISI FSI - Klappt nicht :(
-
 % Mathematical Symbols & Physics Notation
 \usepackage{amsmath}
 \usepackage{amssymb}
@@ -148,7 +146,73 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \section{Herleitung Esther}
 
 \begin{align}
-	S(p) = G^{(2)}(p) = \int \dd^4x\; e^{-\ii px}\bra{\Omega} \mathrm{T} \bar\psi(x)\psi(0)\ket{\Omega}
+	G^{(n)}[\phi] = \bra{\Omega} \mathrm{T}\left\{ \phi(x_1)\phi(x_2)...\phi(x_n) \right\} \ket{\Omega}
+\end{align}
+
+\begin{align}
+	\bra{\Omega} \mathrm{T}\, \phi(x)\phi(y) \ket{\Omega} \equiv
+	\left\{
+	\begin{array}{ll}
+		\bra{\Omega} \phi(x)\phi(y) \ket{\Omega}, & \text{for } x^0 > y^0 \\
+		\bra{\Omega} \phi(y)\phi(x) \ket{\Omega}, & \text{for } y^0 > x^0
+	\end{array}
+	\right.
+\end{align}
+
+\begin{align}
+	G^{(n)}[\phi] = \frac{\int\mathcal D \phi \; \phi(x_1)...\phi(x_n)e^{-S[\phi]}}{\int\mathcal D \phi \;e^{-S[\phi]}}
+\end{align}
+
+\begin{align}
+	G[\phi] = \bra{\Omega} \mathrm{T}\, G[\phi]\ket{\Omega} = \left[G\left[\frac{\delta}{\delta J}\right] \frac{Z[J]}{Z[0]} \right]_{J=0}
+\end{align}
+
+\begin{align}
+	Z[J] = e^{-W[J]} = e^{(\Gamma[\tilde\phi] - \int_x \tilde\phi J(x))}, \quad \Gamma[\tilde\phi] = W[J] - \tilde\phi J
+\end{align}
+
+\begin{align}
+	\tilde\phi(x) = \frac{\delta W[J]}{\delta J(x)} = \frac{1}{Z[J]} \frac{\delta}{\delta J(x)} Z[J] = \langle \phi(x) \rangle
+\end{align}
+
+\begin{align}
+	S_\text{QCD} = \int \dd^4 x\; \left( \bar\psi(\slashed D + m)\psi + \tfrac{1}{4}F^a_{\mu\nu}F_a^{\mu\nu} \right)
+\end{align}
+
+\begin{align}
+	\psi' = U\psi, \quad A'_\mu = U A_\mu A^\dagger - \frac{\ii}{g}U\partial_\mu U^\dagger, \quad F_{\mu\nu}' = U F_{\mu\nu} U^\dagger
+\end{align}
+
+\begin{align}
+	\frac{\delta S[\phi]}{\delta \phi} = 0
+\end{align}
+
+\begin{align}
+	Z[J] = \int\mathcal D \phi\; e^{-S[\phi] + J\phi}
+\end{align}
+
+\begin{align}
+	\int\mathcal D \phi\; e^{-S[\phi] + J\phi} = \int\mathcal D \phi\; e^{-S[\phi + \delta\phi] + J(\phi + \delta\phi)}
+\end{align}
+
+\begin{align}
+	\left\langle \frac{\delta S[\phi]}{\delta \phi(x)}\right\rangle_J = J(x)
+\end{align}
+
+\begin{align}
+	\langle f(\phi)\rangle_J \equiv Z[J]^{-1} \frac{\delta S}{\delta \phi}\left[\frac{\delta}{\delta J(x)}\right]Z[J] = J(x)
+\end{align}
+
+\begin{align}
+	\frac{\delta\Gamma}{\delta\tilde\phi(x)}\left[\tilde\phi(x) + \int_y \frac{\delta^2 \Gamma}{\delta\tilde\phi(x)\delta\tilde\phi(y)}\frac{\delta}{\delta\tilde\phi(y)}\right]
+\end{align}
+
+\begin{align}
+	S^{-1} = S_0^{-1} + \int g\g_\mu D^{\mu\nu}S\Gamma_\nu
+\end{align}
+
+\begin{align}
+	S(p) = G^{(2)}(p) = \int \dd^4x\; e^{-\ii px}\bra{\Omega} \mathrm{T} \, \bar\psi(x)\,\psi(0)\ket{\Omega}
 \end{align}
 
 \begin{align}
@@ -160,14 +224,66 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	S^{-1}(p) = \ii \p A(p^2) + B(p^2) \mathbbm 1_D
+	S^{-1}(p) = \ii \p A(p^2) + B(p^2)
 \end{align}
 
 \begin{align}
 	S^{-1}(p^2) = S_0^{-1}(p^2) + \int \dbar^4 q \; D^{ab}_{\mu\nu}(p-q)\left( g\frac{\lambda^a}{2}\g_\mu \right)S(q^2)\left( g\Gamma^b_\nu(p,q) \right)
 \end{align}
 
+\begin{align}
+	m_0(\Lambda^2) = Z_m(\mu^2,\Lambda^2)m(\mu^2)
+\end{align}
 
+\begin{align}
+	S(p^2,\Lambda^2) = Z_2(\mu^2, \Lambda^2)S_R(p^2, \mu^2)
+\end{align}
+
+\begin{align}
+	A^{-1}(p^2, \Lambda^2) = Z_2(\mu^2, \Lambda^2) A_R^{-1}(p^2, \mu^2)
+\end{align}
+
+\begin{align}
+	Z_{1F} = \frac{Z_2}{\tilde Z_3}, \quad Z_g \tilde Z_3 Z_3^{1/2} = 1
+\end{align}
+
+\begin{align}
+	S(p^2, \mu^2)^{-1} &= Z_2(\ii \p + Z_m m) \\
+	&+ Z_g^2 g^2 \int\limits_k^\Lambda Z_3 D^{ab}_{\mu\nu}(p-k, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right)Z_2 S(k^2, \mu^2) \left( Z_{1F}^{-1} \Gamma^b_\nu(k, p, \mu^2) \right)
+\end{align}
+
+\begin{align}
+	g(\mu^2) = Z_g^{-1}(\mu^2,\Lambda^2) g(\Lambda^2)
+\end{align}
+
+\begin{align}
+	Z_2\left(Z_g^2 Z_3 Z_2 \frac{\tilde Z_3}{Z_2}\right) = \frac{Z_2}{\tilde Z_3} \cdot \left[Z_g^2 \tilde Z_3^2 Z_3\right] = \frac{Z_2}{\tilde Z_3} = Z_{1F}
+\end{align}
+
+\begin{align}
+	S(p^2, \mu^2)^{-1} &= Z_2(\ii \p + Z_m m)^{-1} \\ % todo
+	&+ \frac{Z_2}{\tilde Z_3} g^2 \int\limits_k^\Lambda Z_3 D^{ab}_{\mu\nu}(p-k, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right) S(k^2, \mu^2) \left( \Gamma^b_\nu(k, p, \mu^2) \right)
+\end{align}
+
+\begin{align}
+	A(\mu^2) \overset{!}{=} 1, \quad B(\mu^2) \overset{!}{=} m(\mu^2)
+\end{align}
+
+\begin{align}
+	Z_2 = 1 - \Sigma_A(\mu^2, \Lambda^2), \quad Z_4 = 1 - \frac{\Sigma_B(\mu^2, \Lambda^2)}{m(\mu^2)}
+\end{align}
+
+\begin{align}
+	\frac{1}{Z_2 \tilde Z_3} g^2 D^{ab}_{\mu\nu}(p-k) \Gamma_\nu^b(k,p) \rightarrow \mathcal G\left((p-k)^2\right)\, \frac{t_{\mu\nu}(p-k)}{(p-k)^2}\frac{\lambda^a}{2}\g_\nu
+\end{align}
+
+\begin{align}
+	\frac{\mathcal{G}(k^2)}{4\pi} = \alpha(k^2) = \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} + \frac{2\pi \gamma_m \left( 1-e^{-k^2} \right)}{\ln\left[ e^2-1+\left( 1+\tfrac{k^2}{\Lambda_\mathrm{QCD}^2} \right)^2 \right]}
+\end{align}
+
+\begin{align}
+	\frac{\alpha(k^2)}{k^2} \rightarrow \frac{\alpha(k^2)}{k^2} \left(\frac{\Lambda_\mathrm{PV}^2}{k^2 + \Lambda_\mathrm{PV}^2}\right)
+\end{align}
 
 \begin{align}
 	A(p^2) &= Z_2 + \frac{16\pi}{3}\, Z_2^2 \int \dbar^4 q \; \frac{A(q^2)}{q^2 A^2(q^2) + B^2(q^2)} \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \frac{\Lambda_\textrm{PV}^2}{\Lambda_\textrm{PV}^2 + k^2} \\
