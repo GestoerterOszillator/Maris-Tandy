@@ -63,11 +63,10 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     zA_cache = Dict{Tuple{Float64,Float64}, Float64}()
 
     function z_intA(p::Float64, q::Float64)
-        key = (p, q)
+        key = p <= q ? (p, q) : (q, p)
 
-        if haskey(zA_cache, key)
-            return zA_cache[key]
-        end
+        cached = get(zA_cache, key, nothing)
+        cached !== nothing && return cached
 
         result = z_intAA(p, q)
         zA_cache[key] = result
@@ -87,11 +86,10 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     zB_cache = Dict{Tuple{Float64,Float64}, Float64}()
 
     function z_intB(p::Float64, q::Float64)
-        key = (p, q)
+        key = p <= q ? (p, q) : (q, p)
 
-        if haskey(zB_cache, key)
-            return zB_cache[key]
-        end
+        cached = get(zB_cache, key, nothing)
+        cached !== nothing && return cached
 
         result = z_intBB(p, q)
         zB_cache[key] = result
