@@ -164,6 +164,10 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
+	Z[J] = \int \mathcal D\phi\; e^{-S[\phi] + J\phi}
+\end{align}
+
+\begin{align}
 	G[\phi] = \bra{\Omega} \mathrm{T}\, G[\phi]\ket{\Omega} = \left[G\left[\frac{\delta}{\delta J}\right] \frac{Z[J]}{Z[0]} \right]_{J=0}
 \end{align}
 
@@ -180,7 +184,7 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	\psi' = U\psi, \quad A'_\mu = U A_\mu A^\dagger - \frac{\ii}{g}U\partial_\mu U^\dagger, \quad F_{\mu\nu}' = U F_{\mu\nu} U^\dagger
+	\psi' = U\psi, \quad A'_\mu = U A_\mu U^\dagger - \frac{\ii}{g}U\partial_\mu U^\dagger, \quad F_{\mu\nu}' = U F_{\mu\nu} U^\dagger
 \end{align}
 
 \begin{align}
@@ -200,15 +204,19 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	\langle f(\phi)\rangle_J \equiv Z[J]^{-1} \frac{\delta S}{\delta \phi}\left[\frac{\delta}{\delta J(x)}\right]Z[J] = J(x)
+	\langle f(\phi)\rangle_J \equiv Z[J]^{-1} \int \mathcal D\phi\; f(\phi)\, e^{-S[\phi]+J\phi} = Z[J]^{-1} f\left( \frac{\delta}{\delta J} \right) Z[J]
 \end{align}
 
 \begin{align}
-	\frac{\delta\Gamma}{\delta\tilde\phi(x)}\left[\tilde\phi(x) + \int_y \frac{\delta^2 \Gamma}{\delta\tilde\phi(x)\delta\tilde\phi(y)}\frac{\delta}{\delta\tilde\phi(y)}\right]
+	\left\langle \frac{\delta S[\phi]}{\delta\phi(x)} \right\rangle = Z[J]^{-1} \frac{\delta S}{\delta \phi}\left[\frac{\delta}{\delta J(x)}\right]Z[J] = J(x)
 \end{align}
 
 \begin{align}
-	S^{-1} = S_0^{-1} + \int g\g_\mu D^{\mu\nu}S\Gamma_\nu
+	\frac{\delta\Gamma}{\delta\tilde\phi(x)} = \frac{\delta S}{\delta \phi}\left[\tilde\phi(x) + \int_y \frac{\delta^2 \Gamma}{\delta\tilde\phi(x)\delta\tilde\phi(y)}\frac{\delta}{\delta\tilde\phi(y)}\right]
+\end{align}
+
+\begin{align}
+	S^{-1} = S_0^{-1} + \int g\g_\mu D^{\mu\nu}S \, \Gamma_\nu
 \end{align}
 
 \begin{align}
@@ -228,19 +236,19 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	S^{-1}(p^2) = S_0^{-1}(p^2) + \int \dbar^4 q \; D^{ab}_{\mu\nu}(p-q)\left( g\frac{\lambda^a}{2}\g_\mu \right)S(q^2)\left( g\Gamma^b_\nu(p,q) \right)
+	S^{-1}(p^2) = S_0^{-1}(p^2) + \int \dbar^4 q \; D_{ab}^{\mu\nu}(p-q)\left( g\frac{\lambda^a}{2}\g_\mu \right)S(q^2)\left( g\Gamma^b_\nu(p,q) \right)
 \end{align}
 
 \begin{align}
-	m_0(\Lambda^2) = Z_m(\mu^2,\Lambda^2)m(\mu^2)
+	m_0(\Lambda^2) = Z_m(\mu^2,\Lambda^2)\, m(\mu^2)
 \end{align}
 
 \begin{align}
-	S(p^2,\Lambda^2) = Z_2(\mu^2, \Lambda^2)S_R(p^2, \mu^2)
+	S(p^2,\Lambda^2) = Z_2(\mu^2, \Lambda^2)\, S_R(p^2, \mu^2)
 \end{align}
 
 \begin{align}
-	A^{-1}(p^2, \Lambda^2) = Z_2(\mu^2, \Lambda^2) A_R^{-1}(p^2, \mu^2)
+	A^{-1}(p^2, \Lambda^2) = Z_2(\mu^2, \Lambda^2)\, A_R^{-1}(p^2, \mu^2)
 \end{align}
 
 \begin{align}
@@ -248,8 +256,8 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	S(p^2, \mu^2)^{-1} &= Z_2(\ii \p + Z_m m) \\
-	&+ Z_g^2 g^2 \int\limits_k^\Lambda Z_3 D^{ab}_{\mu\nu}(p-k, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right)Z_2 S(k^2, \mu^2) \left( Z_{1F}^{-1} \Gamma^b_\nu(k, p, \mu^2) \right)
+	S^{-1}(p^2, \mu^2) &= Z_2(\ii \p + Z_m m) \\
+	&+ Z_g^2 g^2 \int \dbar^4 q \; Z_3 D_{ab}^{\mu\nu}(p-q, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right)Z_2 S(q^2, \mu^2) \left( Z_{1F}^{-1} \Gamma^b_\nu(p, q, \mu^2) \right)
 \end{align}
 
 \begin{align}
@@ -261,8 +269,8 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	S(p^2, \mu^2)^{-1} &= Z_2(\ii \p + Z_m m)^{-1} \\ % todo
-	&+ \frac{Z_2}{\tilde Z_3} g^2 \int\limits_k^\Lambda Z_3 D^{ab}_{\mu\nu}(p-k, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right) S(k^2, \mu^2) \left( \Gamma^b_\nu(k, p, \mu^2) \right)
+	S^{-1}(p^2, \mu^2) &= Z_2(\ii \p + Z_m m)^{-1} \\ % todo
+	&+ \frac{Z_2}{\tilde Z_3} g^2 \int \dbar^4 q \; Z_3 D_{ab}^{\mu\nu}(p-q, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right) S(q^2, \mu^2) \left( \Gamma^b_\nu(p, q, \mu^2) \right)
 \end{align}
 
 \begin{align}
@@ -274,9 +282,9 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	\frac{1}{Z_2 \tilde Z_3} g^2 D^{ab}_{\mu\nu}(p-k) \Gamma_\nu^b(k,p) \rightarrow \mathcal G\left((p-k)^2\right)\, \frac{t_{\mu\nu}(p-k)}{(p-k)^2}\frac{\lambda^a}{2}\g_\nu
+	\frac{1}{Z_2 \tilde Z_3} g^2 D_{ab}^{\mu\nu}(p-q) \Gamma_\nu^b(p,q) \rightarrow \mathcal G\left((p-q)^2\right)\, \frac{t^{\mu\nu}(p-q)}{(p-q)^2}\frac{\lambda^a}{2}\g_\nu
 \end{align}
-
+$t^{\mu\nu}(p) = \delta^{\mu\nu} + \frac{p^\mu p^\nu}{p^2}$
 \begin{align}
 	\frac{\mathcal{G}(k^2)}{4\pi} = \alpha(k^2) = \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} + \frac{2\pi \gamma_m \left( 1-e^{-k^2} \right)}{\ln\left[ e^2-1+\left( 1+\tfrac{k^2}{\Lambda_\mathrm{QCD}^2} \right)^2 \right]}
 \end{align}
@@ -294,12 +302,6 @@ Supervisor: Prof. Dr. Christian Fischer \\
 	\alpha(k^2) &= \alpha_\textrm{UV}(k^2) + \alpha_\textrm{IR}(k^2) \\
 	\alpha_\textrm{IR}(k^2) &= \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} \\
 	\alpha_\textrm{UV}(k^2) &= \frac{2\pi \gamma_m \left(1-e^{-k^2}\right)}{\ln\left[e^2-1+\left(1+\tfrac{k^2}{\Lambda_\mathrm{QCD}^2}\right)^2\right]}
-\end{align}
-
-\begin{align}
-	\Xi_A(p, q) =& \int\limits_0^\pi \dd \psi \; \sin^2\psi \left[ (pq) + 2 \frac{(pk)(qk)}{k^2} \right] \frac{\alpha(k^2)}{k^2} \\
-	\Xi_B(p, q) =& \int\limits_0^\pi \dd \psi \; \sin^2\psi \frac{\alpha(k^2)}{k^2} \\
-	&k = p - q, \quad (pq) = |p|\.|q|\. \cos\psi
 \end{align}
 
 \section{Herleitung Stephan}
