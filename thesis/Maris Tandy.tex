@@ -172,11 +172,11 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	Z[J] = e^{-W[J]} = e^{(\Gamma[\tilde\phi] - \int_x \tilde\phi J(x))}, \quad \Gamma[\tilde\phi] = W[J] - \tilde\phi J
+	Z[J] = e^{-W[J]} = e^{-(\Gamma[\tilde\phi] - \int_x \tilde\phi J(x))}, \quad \Gamma[\tilde\phi] = W[J] - \tilde\phi J % todo
 \end{align}
 
 \begin{align}
-	\tilde\phi(x) = \frac{\delta W[J]}{\delta J(x)} = \frac{1}{Z[J]} \frac{\delta}{\delta J(x)} Z[J] = \langle \phi(x) \rangle
+	\tilde\phi(x) = -\frac{\delta W[J]}{\delta J(x)} = \frac{1}{Z[J]} \frac{\delta}{\delta J(x)} Z[J] = \langle \phi(x) \rangle
 \end{align}
 
 \begin{align}
@@ -257,7 +257,7 @@ Supervisor: Prof. Dr. Christian Fischer \\
 
 \begin{align}
 	S^{-1}(p^2, \mu^2) &= Z_2(\ii \p + Z_m m) \\
-	&+ Z_g^2 g^2 \int \dbar^4 q \; Z_3 D_{ab}^{\mu\nu}(p-q, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right)Z_2 S(q^2, \mu^2) \left( Z_{1F}^{-1} \Gamma^b_\nu(p, q, \mu^2) \right)
+	&+ Z_g^2 g^2 \int \dbar^4 q \; Z_3 D_{ab}^{\mu\nu}(p-q, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right)Z_2^2 S(q^2, \mu^2) \left( Z_{1F}^{-1} \Gamma^b_\nu(p, q, \mu^2) \right)
 \end{align}
 
 \begin{align}
@@ -265,12 +265,12 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	Z_2\left(Z_g^2 Z_3 Z_2 \frac{\tilde Z_3}{Z_2}\right) = \frac{Z_2}{\tilde Z_3} \cdot \left[Z_g^2 \tilde Z_3^2 Z_3\right] = \frac{Z_2}{\tilde Z_3} = Z_{1F}
+	Z_g^2 Z_3 Z_2^2 \frac{\tilde Z_3}{Z_2} = \frac{Z_2}{\tilde Z_3} \cdot \left[Z_g^2 \tilde Z_3^2 Z_3\right] = \frac{Z_2}{\tilde Z_3} = Z_{1F}
 \end{align}
 
 \begin{align}
-	S^{-1}(p^2, \mu^2) &= Z_2(\ii \p + Z_m m)^{-1} \\ % todo
-	&+ \frac{Z_2}{\tilde Z_3} g^2 \int \dbar^4 q \; Z_3 D_{ab}^{\mu\nu}(p-q, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right) S(q^2, \mu^2) \left( \Gamma^b_\nu(p, q, \mu^2) \right)
+	S^{-1}(p^2, \mu^2) &= Z_2(\ii \p + Z_m m) \\
+	&+ \frac{Z_2}{\tilde Z_3} g^2 \int \dbar^4 q \; D_{ab}^{\mu\nu}(p-q, \mu^2)\left( \frac{\lambda^a}{2}\g_\mu \right) S(q^2, \mu^2) \left( \Gamma^b_\nu(p, q, \mu^2) \right)
 \end{align}
 
 \begin{align}
@@ -282,9 +282,9 @@ Supervisor: Prof. Dr. Christian Fischer \\
 \end{align}
 
 \begin{align}
-	\frac{1}{Z_2 \tilde Z_3} g^2 D_{ab}^{\mu\nu}(p-q) \Gamma_\nu^b(p,q) \rightarrow \mathcal G\left((p-q)^2\right)\, \frac{t^{\mu\nu}(p-q)}{(p-q)^2}\frac{\lambda^a}{2}\g_\nu
+	\frac{Z_2}{\tilde Z_3} g^2 D_{ab}^{\mu\nu}(p-q) \Gamma_\nu^b(p,q) \rightarrow Z_2^2 \mathcal G\left((p-q)^2\right)\, \frac{t^{\mu\nu}(p-q)}{(p-q)^2}\frac{\lambda^a}{2}\g_\nu
 \end{align}
-$t^{\mu\nu}(p) = \delta^{\mu\nu} + \frac{p^\mu p^\nu}{p^2}$
+$t^{\mu\nu}(k) = \delta^{\mu\nu} - \frac{k^\mu k^\nu}{k^2}$
 \begin{align}
 	\frac{\mathcal{G}(k^2)}{4\pi} = \alpha(k^2) = \frac{D}{\omega^6} \pi k^4 e^{-\tfrac{k^2}{\omega^2}} + \frac{2\pi \gamma_m \left( 1-e^{-k^2} \right)}{\ln\left[ e^2-1+\left( 1+\tfrac{k^2}{\Lambda_\mathrm{QCD}^2} \right)^2 \right]}
 \end{align}

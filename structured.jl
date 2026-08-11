@@ -16,8 +16,8 @@ default(
     framestyle = :box,
     color_palette = palette(:tab10)
 )
-const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
-# const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
+# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
 
 # Constants
 const m = 0.0037
