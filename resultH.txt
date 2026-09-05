@@ -1,0 +1,48 @@
+p.P*P.q*qplus.qminus*Aplus*Aminus*H*Delta^-1 + p.P*P.q*Bplus*Bminus*H*Delta^-1
+       - p.P*P.qplus*q.qminus*Aplus*Aminus*H*Delta^-1 + 1/2*p.P*P.qplus*Aplus*
+      Bminus*F*Delta^-1 - p.P*P.qminus*q.qplus*Aplus*Aminus*H*Delta^-1 + 1/2*
+      p.P*P.qminus*Aminus*Bplus*F*Delta^-1 + 2*p.P*P.k*q.qplus*qminus.k*k.k^-1
+      *Aplus*Aminus*H*Delta^-1 + 2*p.P*P.k*q.qminus*qplus.k*k.k^-1*Aplus*
+      Aminus*H*Delta^-1 - 2*p.P*P.k*q.k*qplus.qminus*k.k^-1*Aplus*Aminus*H*
+      Delta^-1 - 2*p.P*P.k*q.k*k.k^-1*Bplus*Bminus*H*Delta^-1 - p.P*P.k*
+      qplus.k*k.k^-1*Aplus*Bminus*F*Delta^-1 - p.P*P.k*qminus.k*k.k^-1*Aminus*
+      Bplus*F*Delta^-1 - p.q*P.P*qplus.qminus*Aplus*Aminus*H*Delta^-1 - p.q*
+      P.P*Bplus*Bminus*H*Delta^-1 + 1/2*p.q*P.q*P.qplus*Aplus*Bminus*G*
+      Delta^-1 + 1/2*p.q*P.q*P.qminus*Aminus*Bplus*G*Delta^-1 - p.q*P.q*P.k*
+      qplus.k*k.k^-1*Aplus*Bminus*G*Delta^-1 - p.q*P.q*P.k*qminus.k*k.k^-1*
+      Aminus*Bplus*G*Delta^-1 + 2*p.q*P.qplus*P.qminus*Aplus*Aminus*H*Delta^-1
+       - 2*p.q*P.qplus*P.k*qminus.k*k.k^-1*Aplus*Aminus*H*Delta^-1 - 2*p.q*
+      P.qminus*P.k*qplus.k*k.k^-1*Aplus*Aminus*H*Delta^-1 + 2*p.q*P.k^2*
+      qplus.qminus*k.k^-1*Aplus*Aminus*H*Delta^-1 + 2*p.q*P.k^2*k.k^-1*Bplus*
+      Bminus*H*Delta^-1 + p.qplus*P.P*q.qminus*Aplus*Aminus*H*Delta^-1 - 1/2*
+      p.qplus*P.P*Aplus*Bminus*F*Delta^-1 - p.qplus*P.q*P.qminus*Aplus*Aminus*
+      H*Delta^-1 + p.qplus*P.q*P.k*q.k*k.k^-1*Aplus*Bminus*G*Delta^-1 - 1/2*
+      p.qplus*P.q^2*Aplus*Bminus*G*Delta^-1 + 2*p.qplus*P.qminus*P.k*q.k*
+      k.k^-1*Aplus*Aminus*H*Delta^-1 - 1/2*p.qplus*P.qminus*Aplus*Aminus*E*
+      Delta^-1 + p.qplus*P.k*qminus.k*k.k^-1*Aplus*Aminus*E*Delta^-1 - 2*
+      p.qplus*P.k^2*q.qminus*k.k^-1*Aplus*Aminus*H*Delta^-1 + p.qplus*P.k^2*
+      k.k^-1*Aplus*Bminus*F*Delta^-1 + p.qminus*P.P*q.qplus*Aplus*Aminus*H*
+      Delta^-1 - 1/2*p.qminus*P.P*Aminus*Bplus*F*Delta^-1 - p.qminus*P.q*
+      P.qplus*Aplus*Aminus*H*Delta^-1 + p.qminus*P.q*P.k*q.k*k.k^-1*Aminus*
+      Bplus*G*Delta^-1 - 1/2*p.qminus*P.q^2*Aminus*Bplus*G*Delta^-1 + 2*
+      p.qminus*P.qplus*P.k*q.k*k.k^-1*Aplus*Aminus*H*Delta^-1 + 1/2*p.qminus*
+      P.qplus*Aplus*Aminus*E*Delta^-1 - p.qminus*P.k*qplus.k*k.k^-1*Aplus*
+      Aminus*E*Delta^-1 - 2*p.qminus*P.k^2*q.qplus*k.k^-1*Aplus*Aminus*H*
+      Delta^-1 + p.qminus*P.k^2*k.k^-1*Aminus*Bplus*F*Delta^-1 - 2*p.k*P.P*
+      q.qplus*qminus.k*k.k^-1*Aplus*Aminus*H*Delta^-1 - 2*p.k*P.P*q.qminus*
+      qplus.k*k.k^-1*Aplus*Aminus*H*Delta^-1 + 2*p.k*P.P*q.k*qplus.qminus*
+      k.k^-1*Aplus*Aminus*H*Delta^-1 + 2*p.k*P.P*q.k*k.k^-1*Bplus*Bminus*H*
+      Delta^-1 + p.k*P.P*qplus.k*k.k^-1*Aplus*Bminus*F*Delta^-1 + p.k*P.P*
+      qminus.k*k.k^-1*Aminus*Bplus*F*Delta^-1 - p.k*P.q*P.qplus*q.k*k.k^-1*
+      Aplus*Bminus*G*Delta^-1 + 2*p.k*P.q*P.qplus*qminus.k*k.k^-1*Aplus*Aminus
+      *H*Delta^-1 - p.k*P.q*P.qminus*q.k*k.k^-1*Aminus*Bplus*G*Delta^-1 + 2*
+      p.k*P.q*P.qminus*qplus.k*k.k^-1*Aplus*Aminus*H*Delta^-1 - 2*p.k*P.q*P.k*
+      qplus.qminus*k.k^-1*Aplus*Aminus*H*Delta^-1 - 2*p.k*P.q*P.k*k.k^-1*Bplus
+      *Bminus*H*Delta^-1 + p.k*P.q^2*qplus.k*k.k^-1*Aplus*Bminus*G*Delta^-1 + 
+      p.k*P.q^2*qminus.k*k.k^-1*Aminus*Bplus*G*Delta^-1 - 4*p.k*P.qplus*
+      P.qminus*q.k*k.k^-1*Aplus*Aminus*H*Delta^-1 + 2*p.k*P.qplus*P.k*q.qminus
+      *k.k^-1*Aplus*Aminus*H*Delta^-1 - p.k*P.qplus*P.k*k.k^-1*Aplus*Bminus*F*
+      Delta^-1 - p.k*P.qplus*qminus.k*k.k^-1*Aplus*Aminus*E*Delta^-1 + 2*p.k*
+      P.qminus*P.k*q.qplus*k.k^-1*Aplus*Aminus*H*Delta^-1 - p.k*P.qminus*P.k*
+      k.k^-1*Aminus*Bplus*F*Delta^-1 + p.k*P.qminus*qplus.k*k.k^-1*Aplus*
+      Aminus*E*Delta^-1

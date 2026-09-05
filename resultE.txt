@@ -1,0 +1,4 @@
+ - 3*Bplus*Bminus*E - 3*P.q*q.qplus*Aplus*Bminus*G + 3*P.q*q.qminus*Aminus*
+      Bplus*G + 6*P.qplus*q.qminus*Aplus*Aminus*H - 3*P.qplus*Aplus*Bminus*F
+       - 6*P.qminus*q.qplus*Aplus*Aminus*H + 3*P.qminus*Aminus*Bplus*F - 3*
+      qplus.qminus*Aplus*Aminus*E

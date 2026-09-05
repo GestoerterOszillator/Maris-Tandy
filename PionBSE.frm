@@ -1,4 +1,4 @@
-Symbols m, Aplus, Aminus, Bplus, Bminus, E, F, G, H;
+Symbols m, Aplus, Aminus, Bplus, Bminus, E, F, G, H, Delta;
 Vectors p, P, q, qplus, qminus, k;
 Indices mu, nu;
 Off statistics;
@@ -28,12 +28,19 @@ trace4,1;
 
 contract;
 
+id p.p*P.P = p.P^2 - Delta;
 .sort
-Local ResultE = TrE *    (d_(mu,nu) - k(mu)*k(nu)/k.k)/4;
-Local ResultF = TrF * i_*(d_(mu,nu) - k(mu)*k(nu)/k.k)/(4*((p.P)^2 - p.p*P.P));
-Local ResultG = TrG * i_*(d_(mu,nu) - k(mu)*k(nu)/k.k)/(4*((p.P)^2 - p.p*P.P));
-Local ResultH = TrH *    (d_(mu,nu) - k(mu)*k(nu)/k.k)/(16*((p.P)^2 - p.p*P.P));
-
+Local ResultE = TrE*   (d_(mu,nu) - k(mu)*k(nu)/k.k)/4;
+Local ResultF = TrF*i_*(d_(mu,nu) - k(mu)*k(nu)/k.k)/(4*Delta);
+Local ResultG = TrG*i_*(d_(mu,nu) - k(mu)*k(nu)/k.k)/(4*Delta);
+Local ResultH = TrH*   (d_(mu,nu) - k(mu)*k(nu)/k.k)/(16*Delta);
 .sort
+contract;
+.sort
+Bracket E,F,G,H;
+*#write <resultE.txt> "%E", ResultE
+*#write <resultF.txt> "%E", ResultF
+*#write <resultG.txt> "%E", ResultG
+*#write <resultH.txt> "%E", ResultH
 Print +s;
 .end
