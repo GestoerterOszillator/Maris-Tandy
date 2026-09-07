@@ -1,4 +1,4 @@
-Symbols m, Aplus, Aminus, Bplus, Bminus, E, F, G, H, Delta;
+Symbols m, Aplus, Aminus, Bplus, Bminus, E, F, G, H, Delta, p2, P2, pP;
 Vectors p, P, q, qplus, qminus, k;
 Indices mu, nu;
 Off statistics;
@@ -87,6 +87,13 @@ trace4,1;
 .sort
 contract;
 id p.p*P.P = p.P^2 - Delta;
+.sort
+id qplus = q + P/2;
+id qminus = q - P/2;
+.sort
+id p.p = p2;
+id P.P = P2;
+id p.P = pP;
 
 .sort
 Local EE = TrEE * (d_(mu,nu) - k(mu)*k(nu)/k.k)/4;
