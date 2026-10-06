@@ -2,22 +2,22 @@ using Plots
 using FastGaussQuadrature
 using LaTeXStrings
 using ProgressMeter
-pgfplotsx() # pgfplotsx() or gr()
-default(
-    fontfamily = "Computer Modern",
-    tic(p-q)font   = font(15, "Computer Modern"),
-    guidefont  = font(15, "Computer Modern"),
-    legendfont = font(15, "Computer Modern"),
-    lw = 2,
-    grid = :on,
-    gridalpha = 0.3,
-    size = (500, 400),
-    legend = :topright,
-    framestyle = :box,
-    color_palette = palette(:tab10)
-)
-# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
-const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
+# pgfplotsx() # pgfplotsx() or gr()
+# default(
+#     fontfamily = "Computer Modern",
+#     tickfont   = font(15, "Computer Modern"),
+#     guidefont  = font(15, "Computer Modern"),
+#     legendfont = font(15, "Computer Modern"),
+#     lw = 2,
+#     grid = :on,
+#     gridalpha = 0.3,
+#     size = (500, 400),
+#     legend = :topright,
+#     framestyle = :box,
+#     color_palette = palette(:tab10)
+# )
+const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+# const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
 
 # Constants
 const m = 0.0037
@@ -28,10 +28,10 @@ const Lambda_QCD = 0.234
 const gamma_m = 0.48 # 12/(33 - 2 * Nf{4}) = 0.48
 const mu = 19.0
 
-function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, angular_steps::Int = 64)
+function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, angular_steps::Int = 32)
     # Integration Grids
     x, w_x = gausslegendre(radial_steps)
-    z, w_z = gausslegendre(angular_steps) # Chebyshev second kind
+    z, w_z = gausslegendre(angular_steps)
 
     t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
     w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
@@ -60,10 +60,11 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
         return sum(integrand)
     end
 
-    zA_cache = Dict{Tuple{ComplexF64,Float64}, Float64}()
+    zA_cache = Dict{Tuple{ComplexF64, Float64}, ComplexF64}()
 
     function z_intA(p::ComplexF64, q::Float64)
-        key = p <= q ? (p, q) : (q, p)
+        # key = abs.(p) <= q ? (p, q) : (q, p)
+        key = (p, q)
 
         cached = get(zA_cache, key, nothing)
         cached !== nothing && return cached
@@ -83,10 +84,11 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
         return sum(integrand)
     end
 
-    zB_cache = Dict{Tuple{ComplexF64,Float64}, Float64}()
+    zB_cache = Dict{Tuple{ComplexF64, Float64}, ComplexF64}()
 
     function z_intB(p::ComplexF64, q::Float64)
-        key = p <= q ? (p, q) : (q, p)
+        # key = abs.(p) <= q ? (p, q) : (q, p)
+        key = (p, q)
 
         cached = get(zB_cache, key, nothing)
         cached !== nothing && return cached
@@ -99,12 +101,12 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
 
     # Final Radial Integrals
     function Sigma_A(p2, A, B, Z_2)
-        integrand = @. w_t * exp(2*t) * A / (exp(t) * A^2 + B^2) * z_intA(sqrt(p2), exp(t/2))
+        integrand = @. w_t * exp(2*t) * A / (exp(t) * A^2 + B^2) * z_intA(sqrt(Complex(p2)), exp(t/2))
         return Z_2^2 * 16pi/(3*(2pi)^3 * p2) * sum(integrand)
     end
 
     function Sigma_B(p2, A, B, Z_2)
-        integrand = @. w_t * exp(2*t) * B / (exp(t) * A^2 + B^2) * z_intB(sqrt(p2), exp(t/2))
+        integrand = @. w_t * exp(2*t) * B / (exp(t) * A^2 + B^2) * z_intB(sqrt(Complex(p2)), exp(t/2))
         return Z_2^2 * 16pi/(2pi)^3 * sum(integrand)
     end
 
@@ -140,13 +142,31 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     return t, A_func, B_func, Z_2, Z_4m
 end
 
-@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 1.0, true)
+@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93, false)
+
+plot(exp.(t), real.(A.(exp.(t))), xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
+    yticks = 0.4:0.4:2.0)
+plot!(exp.(t), real.(B.(exp.(t))))
+savefig("deleteme1.png")
+
+imagp = -10:0.01:-0.001
+plot(imagp, real.(B.(imagp)) ./ real.(A.(imagp)), xlims = (-10, 0), ylims = (0, 10.0))
+savefig("deleteme2.png")
 
 function EE(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    # k2 = p2 + q2 - 2*pq
+    # pk = p2 - pq
+    # qk = pq - q2
+    # Pk = pP - Pq
+    # Delta = pP^2 - p2*P2
     return  - 3*Bplus*Bminus - 3*Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
+end
+
+function kp(kp)
 end
 
 function EF(p2, q2, P2, pP, pq, Pq, A, B)

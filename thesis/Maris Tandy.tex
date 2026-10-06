@@ -391,7 +391,22 @@ $C_f = \frac{4}{3}$
 \chapter{Pion BSE}
 
 \begin{align}
-	\Gamma_{PS} (p,P) = \g^5 \left( E(p,P) - \ii \slashed P \, F(p,P) - \ii (p\cdot P) \,\p\; G(p,P) + \left[\p, \slashed P\right]_- H(p,P)  \right)
+	\Gamma_\textrm{PS}(p,P) = \g^5 \left( E(p,P) - \ii \slashed P \, F(p,P) - \ii (p\cdot P) \,\p\; G(p,P) + \left[\p, \slashed P\right]_- H(p,P)  \right)
+\end{align}
+
+\begin{align}
+	\Gamma(p,P) = -C_f Z_2^2 4\pi \int \dbar^4 q \g^\mu S(q_+) \Gamma(q,P) S(q_-) \g^\nu T_{\mu\nu}(k) \frac{\alpha(k^2)}{k^2}
+\end{align}
+Inserting our ansatz, applying projector $p_E$, and taking the Dirac trace, we get:
+\begin{align}
+	E(p,P) = \tr\Big[&-C_f Z_2^2 4\pi \frac{1}{4} \g^5 \int \dbar^4 q \g^\mu S(q_+) \g^5 \big( E(q,P) - \ii \slashed P \, F(q,P) \notag\\
+	& - \ii (q\cdot P) \,\q\; G(q,P) + \left[\q, \slashed P\right]_- H(q,P)  \big) S(q_-) \g^\nu T_{\mu\nu}(k) \frac{\alpha(k^2)}{k^2}\Big] \\
+	= &-C_f Z_2^2 \pi \int \dbar^4 q \tr\Big[ \g^5 \g^\mu S(q_+) \g^5 \big( E(q,P) - \ii \slashed P \, F(q,P) \notag\\
+	& - \ii (q\cdot P) \,\q\; G(q,P) + \left[\q, \slashed P\right]_- H(q,P)  \big) S(q_-) \g^\nu T_{\mu\nu}(k) \Big] \frac{\alpha(k^2)}{k^2}
+\end{align}
+Observing the alone-standing trace:
+\begin{align}
+	\tr[ \g^5 \g^\mu \frac{\ii \q_+ A(q_+^2) + B(q_+^2)}{q_+^2 A^2(q_+^2) + B^2(q_+^2)} \g^5 \big( E(q,P) - \ii \slashed P \, F(q,P) - \ii (q\cdot P) \,\q\; G(q,P) + \left[\q, \slashed P\right]_- H(q,P)  \big) \frac{\ii \q_- A(q_-^2) + B(q_-^2)}{q_-^2 A^2(q_-^2) + B^2(q_-^2)} \g^\nu T_{\mu\nu}(k)]
 \end{align}
 
 \begin{align}
@@ -414,10 +429,6 @@ $C_f = \frac{4}{3}$
 		G(q) \\
 		H(q)
 	\end{pmatrix}
-\end{align}
-
-\begin{align}
-	\Gamma(p,P) = -C_f Z_2^2 4\pi \int \dbar^4 q \g^\mu S(q_+) \Gamma(q,P) S(q_-) \g^\nu T_{\mu\nu}(k) \frac{\alpha(k^2)}{k^2}
 \end{align}
 
 \begin{align}
