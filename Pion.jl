@@ -153,7 +153,7 @@ imagp = -10:0.01:-0.001
 plot(imagp, real.(B.(imagp)) ./ real.(A.(imagp)), xlims = (-10, 0), ylims = (0, 10.0))
 savefig("deleteme2.png")
 
-function EE(p2, q2, P2, pP, pq, Pq, A, B)
+function EE(p2, q2, P2, pP, pq, Pq)
     Aplus = A(q2 + Pq + P2/4)
     Aminus = A(q2 - Pq + P2/4)
     Bplus = B(q2 + Pq + P2/4)
@@ -163,40 +163,86 @@ function EE(p2, q2, P2, pP, pq, Pq, A, B)
     # qk = pq - q2
     # Pk = pP - Pq
     # Delta = pP^2 - p2*P2
-    return  - 3*Bplus*Bminus - 3*Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
+    return - 3*Bplus*Bminus - 3*Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
 end
 
-function kp(kp)
+function entries(M, p2, q2, z_p, z_q; w = 0.4, D = 1.0) # Es fehlen w's und E(q2, Pq)
+    Pq = im*M*q*z_q
+    qplus2 = q2 + Pq - M^2/4
+    qminus2 = q2 - Pq - M^2/4
+    Aplus = A(qplus2)
+    Aminus = A(qminus2)
+    Bplus = B(qplus2)
+    Bminus = B(qminus2)
+    k2 = p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)
+    alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
+    alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
+    alpha(k2::ComplexF64) = alpha_IR(k2) + alpha_UV(k2)
+    return 3/(2pi)^2 * 4/3 * Z_2^2 * sqrt(1-z_q^2) * (Aplus*Aminus*(q2 + M^2/4) + Bplus*Bminus)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * alpha(k2)/k2
 end
 
-function EF(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return 3*Aminus*Bplus*Pq - 3/2*Aminus*Bplus*P2 - 3*Aplus*Bminus*Pq - 3/2*
-      Aplus*Bminus*P2
+function bittebruder(M; radial_steps::Int = 256, angular_steps::Int = 32)
+    x, w_x = gausslegendre(radial_steps)
+    z, w_z = gausslegendre(angular_steps)
+
+    t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
+    w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
+
+    Mater = zeros(Float64, radial_steps*angular_steps, radial_steps*angular_steps)
+    
+end
+
+function EF(p2, q2, P2, pP, pq, Pq)
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return 3*Aminus*Bplus*Pq - 3/2*Aminus*Bplus*P2 - 3*Aplus*Bminus*Pq - 3/2*Aplus*Bminus*P2
 end
 
 function EG(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return  - 3/2*Aminus*Bplus*Pq^2 + 3*Aminus*Bplus*q2*Pq - 3/2*Aplus*Bminus*
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return - 3/2*Aminus*Bplus*Pq^2 + 3*Aminus*Bplus*q2*Pq - 3/2*Aplus*Bminus*
       Pq^2 - 3*Aplus*Bminus*q2*Pq
 end
 
 function EH(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return  - 6*Aplus*Aminus*Pq^2 + 6*Aplus*Aminus*P2*q2
 end
 
 function FE(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return  - Aminus*Bplus*Delta^-1*k2^-1*pP*pk*Pk + 2*Aminus*Bplus*Delta^-1*
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return - Aminus*Bplus*Delta^-1*k2^-1*pP*pk*Pk + 2*Aminus*Bplus*Delta^-1*
       k2^-1*pP*pk*qk + Aminus*Bplus*Delta^-1*pP*pq - 1/2*Aminus*Bplus*Delta^-1*
       pP^2 + Aminus*Bplus*Delta^-1*p2*k2^-1*Pk^2 - 2*Aminus*Bplus*Delta^-1*p2*
       k2^-1*qk*Pk - Aminus*Bplus*Delta^-1*p2*Pq + 1/2*Aminus*Bplus*Delta^-1*
@@ -208,9 +254,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function FF(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return 2*Bplus*Bminus*Delta^-1*k2^-1*pP*pk*Pk - 2*Bplus*Bminus*Delta^-1*
       pP^2 - 2*Bplus*Bminus*Delta^-1*p2*k2^-1*Pk^2 + 2*Bplus*Bminus*Delta^-1*
       p2*P2 + 3*Bplus*Bminus + 4*Aplus*Aminus*Delta^-1*k2^-1*pP*Pq*pk*qk + 2*
@@ -224,9 +276,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function FG(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return 2*Bplus*Bminus*Delta^-1*k2^-1*pP*Pq*pk*qk + Bplus*Bminus*Delta^-1*
       pP*pq*Pq - 2*Bplus*Bminus*Delta^-1*p2*k2^-1*Pq*qk*Pk - Bplus*Bminus*
       Delta^-1*p2*Pq^2 - Aplus*Aminus*Delta^-1*k2^-1*pP*Pq^2*pk*Pk - 1/2*Aplus*
@@ -239,9 +297,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function FH(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return 2*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*pk*Pk + 4*Aminus*Bplus*Delta^-1*
     k2^-1*pP*Pq*pk*qk + 2*Aminus*Bplus*Delta^-1*pP*pq*Pq - 2*Aminus*Bplus*
       Delta^-1*pP^2*Pq - 4*Aminus*Bplus*Delta^-1*q2*k2^-1*pP*pk*Pk + 4*Aminus*
@@ -263,10 +327,16 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function GE(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return  - Aminus*Bplus*Delta^-1*k2^-1*Pk^2 + 2*Aminus*Bplus*Delta^-1*k2^-1*
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return - Aminus*Bplus*Delta^-1*k2^-1*Pk^2 + 2*Aminus*Bplus*Delta^-1*k2^-1*
       qk*Pk + Aminus*Bplus*Delta^-1*Pq + Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*
       pk*Pk - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*pk*qk - Aminus*Bplus*
       Delta^-1*P2*pP^-1*pq - Aplus*Bminus*Delta^-1*k2^-1*Pk^2 - 2*Aplus*Bminus*
@@ -276,9 +346,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function GF(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return 2*Bplus*Bminus*Delta^-1*k2^-1*Pk^2 - 2*Bplus*Bminus*Delta^-1*P2*
       k2^-1*pP^-1*pk*Pk + 4*Aplus*Aminus*Delta^-1*k2^-1*Pq*qk*Pk + 2*Aplus*
       Aminus*Delta^-1*Pq^2 - 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pk^2 - 4*Aplus*
@@ -289,9 +365,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function GG(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*qk*Pk + Bplus*Bminus*Delta^-1*Pq^2
        - 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - Bplus*Bminus*
       Delta^-1*P2*pP^-1*pq*Pq - Aplus*Aminus*Delta^-1*k2^-1*Pq^2*Pk^2 + 2*
@@ -304,9 +386,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function GH(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return 2*Aminus*Bplus*Delta^-1*k2^-1*Pq*Pk^2 + 4*Aminus*Bplus*Delta^-1*
       k2^-1*Pq*qk*Pk + 2*Aminus*Bplus*Delta^-1*Pq^2 - 4*Aminus*Bplus*Delta^-1*
       q2*k2^-1*Pk^2 - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*Pk - 4*
@@ -325,9 +413,15 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function HE(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
     return Aplus*Aminus*Delta^-1*k2^-1*Pq*pk*Pk - Aplus*Aminus*Delta^-1*k2^-1*
       pq*Pk^2 + Aplus*Aminus*Delta^-1*k2^-1*pP*qk*Pk - 1/2*Aplus*Aminus*
       Delta^-1*pP*Pq - Aplus*Aminus*Delta^-1*P2*k2^-1*pk*qk + 1/2*Aplus*Aminus*
@@ -335,10 +429,16 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function HF(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return  - Aminus*Bplus*Delta^-1*k2^-1*Pq*pk*Pk + Aminus*Bplus*Delta^-1*
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return - Aminus*Bplus*Delta^-1*k2^-1*Pq*pk*Pk + Aminus*Bplus*Delta^-1*
       k2^-1*pq*Pk^2 - Aminus*Bplus*Delta^-1*k2^-1*pP*qk*Pk + 1/2*Aminus*Bplus*
       Delta^-1*pP*Pq + Aminus*Bplus*Delta^-1*P2*k2^-1*pk*qk - 1/2*Aminus*Bplus*
       Delta^-1*P2*pq - Aplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + Aplus*Bminus*
@@ -348,10 +448,16 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function HG(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return  - 1/2*Aminus*Bplus*Delta^-1*k2^-1*Pq^2*pk*Pk + 1/2*Aminus*Bplus*
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return - 1/2*Aminus*Bplus*Delta^-1*k2^-1*Pq^2*pk*Pk + 1/2*Aminus*Bplus*
       Delta^-1*k2^-1*pq*Pq*Pk^2 - 1/2*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*qk*Pk
        + 1/4*Aminus*Bplus*Delta^-1*pP*Pq^2 + 1/2*Aminus*Bplus*Delta^-1*P2*
       k2^-1*Pq*pk*qk - 1/4*Aminus*Bplus*Delta^-1*P2*pq*Pq + 1/2*Aplus*Bminus*
@@ -362,10 +468,16 @@ P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
 end
 
 function HH(p2, q2, P2, pP, pq, Pq, A, B)
-    Aplus = A(q2 + Pq + P2/4); Aminus = A(q2 - Pq + P2/4); Bplus = B(q2 + Pq + 
-P2/4); Bminus = B(q2 - Pq + P2/4); k2 = p2 + q2 - 2*pq; pk = p2 - pq; qk = pq -
- q2; Pk = pP - Pq; Delta = pP^2 - p2*P2
-    return  - 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + 2*Bplus*Bminus*Delta^-1*
+    Aplus = A(q2 + Pq + P2/4)
+    Aminus = A(q2 - Pq + P2/4)
+    Bplus = B(q2 + Pq + P2/4)
+    Bminus = B(q2 - Pq + P2/4)
+    k2 = p2 + q2 - 2*pq
+    pk = p2 - pq
+    qk = pq - q2
+    Pk = pP - Pq
+    Delta = pP^2 - p2*P2
+    return - 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + 2*Bplus*Bminus*Delta^-1*
       k2^-1*pq*Pk^2 - 2*Bplus*Bminus*Delta^-1*k2^-1*pP*qk*Pk + Bplus*Bminus*
       Delta^-1*pP*Pq + 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pk*qk - Bplus*Bminus*
       Delta^-1*P2*pq + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pq*pk*Pk - 2*Aplus*
