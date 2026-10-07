@@ -1,5 +1,7 @@
 using Plots
+using LinearAlgebra
 using FastGaussQuadrature
+using QuadGK
 using LaTeXStrings
 using ProgressMeter
 # pgfplotsx() # pgfplotsx() or gr()
@@ -142,7 +144,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     return t, A_func, B_func, Z_2, Z_4m
 end
 
-@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93, false)
+@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93, true)
 
 plot(exp.(t), real.(A.(exp.(t))), xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
     yticks = 0.4:0.4:2.0)
@@ -167,30 +169,45 @@ function EE(p2, q2, P2, pP, pq, Pq)
 end
 
 function entries(M, p2, q2, z_p, z_q; w = 0.4, D = 1.0) # Es fehlen w's und E(q2, Pq)
-    Pq = im*M*q*z_q
+    Pq = im*M*sqrt(q2)*z_q
     qplus2 = q2 + Pq - M^2/4
     qminus2 = q2 - Pq - M^2/4
     Aplus = A(qplus2)
     Aminus = A(qminus2)
     Bplus = B(qplus2)
     Bminus = B(qminus2)
-    k2 = p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)
     alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
     alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
-    alpha(k2::ComplexF64) = alpha_IR(k2) + alpha_UV(k2)
-    return 3/(2pi)^2 * 4/3 * Z_2^2 * sqrt(1-z_q^2) * (Aplus*Aminus*(q2 + M^2/4) + Bplus*Bminus)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * alpha(k2)/k2
+    alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
+    return 3/(2pi)^2 * 4/3 * Z_2^2 * sqrt(1-z_q^2) * (Aplus*Aminus*(q2 + M^2/4) + Bplus*Bminus)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * quadgk(y -> alpha(p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q))/(p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)), -1, 1)[1]
 end
 
-function bittebruder(M; radial_steps::Int = 256, angular_steps::Int = 32)
+function bittebruder(M; radial_steps::Int = 64, angular_steps::Int = 8)
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausslegendre(angular_steps)
 
     t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
     w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
 
+    get_index(i, j, k, l) = (i-1)*angular_steps + j, (k-1)*angular_steps + l
+
     Mater = zeros(Float64, radial_steps*angular_steps, radial_steps*angular_steps)
-    
+    progress = Progress((radial_steps*angular_steps)^2, desc = "Berechne...")
+    for i in 1:radial_steps
+        for j in 1:angular_steps
+            for k in 1:radial_steps
+                for l in 1:angular_steps
+                    Mater[get_index(i,j,k,l)...] = w_t[k] * w_z[l] * entries(M, exp(t[i]), exp(t[k]), z[j], z[l])
+                    next!(progress)
+                end
+            end
+        end
+    end
+    Eigens = eigen(Mater)
+    return Mater, Eigens
 end
+
+Mater, Eigens = bittebruder(0.1)
 
 function EF(p2, q2, P2, pP, pq, Pq)
     Aplus = A(q2 + Pq + P2/4)
