@@ -144,7 +144,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     return t, A_func, B_func, Z_2, Z_4m
 end
 
-@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93312, true)
+@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93312, false)
 
 plot(exp.(t), real.(A.(exp.(t))), xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
     yticks = 0.4:0.4:2.0)
@@ -179,7 +179,7 @@ function entries(M, p2, q2, z_p, z_q; w = 0.4, D = 0.93312) # Es fehlen w's und 
     alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
     alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
-    return 3/(2pi)^2 * 4/3 * Z_2^2 * sqrt(1-z_q^2) * (Aplus*Aminus*(q2 + M^2/4) + Bplus*Bminus)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * quadgk(y -> alpha(p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q))/(p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)), -1, 1)[1]
+    return 3/(2pi)^2 * 4/3 * Z_2^2 * q2^2 * sqrt(1-z_q^2) * (Aplus*Aminus*(q2 + M^2/4) + Bplus*Bminus)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * quadgk(y -> alpha(p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q))/(p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)), -1, 1)[1]
 end
 
 function bittebruder(M; radial_steps::Int = 64, angular_steps::Int = 8)
@@ -191,7 +191,7 @@ function bittebruder(M; radial_steps::Int = 64, angular_steps::Int = 8)
 
     get_index(i, j, k, l) = (i-1)*angular_steps + j, (k-1)*angular_steps + l
 
-    Mater = zeros(Float64, radial_steps*angular_steps, radial_steps*angular_steps)
+    Kappa = zeros(Float64, radial_steps*angular_steps, radial_steps*angular_steps)
     progress = Progress((radial_steps*angular_steps)^2, desc = "Berechne...")
     for i in 1:radial_steps
         for j in 1:angular_steps
@@ -203,8 +203,8 @@ function bittebruder(M; radial_steps::Int = 64, angular_steps::Int = 8)
             end
         end
     end
-    Eigens = eigen(Mater)
-    return Mater, Eigens
+    Eigens = eigen(Kappa)
+    return Kappa, Eigens
 end
 
 Mater, Eigens = bittebruder(0.1)
