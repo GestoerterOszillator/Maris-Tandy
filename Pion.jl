@@ -144,7 +144,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, an
     return t, A_func, B_func, Z_2, Z_4m
 end
 
-@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93, true)
+@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93312, true)
 
 plot(exp.(t), real.(A.(exp.(t))), xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
     yticks = 0.4:0.4:2.0)
@@ -168,7 +168,7 @@ function EE(p2, q2, P2, pP, pq, Pq)
     return - 3*Bplus*Bminus - 3*Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
 end
 
-function entries(M, p2, q2, z_p, z_q; w = 0.4, D = 1.0) # Es fehlen w's und E(q2, Pq)
+function entries(M, p2, q2, z_p, z_q; w = 0.4, D = 0.93312) # Es fehlen w's und E(q2, Pq)
     Pq = im*M*sqrt(q2)*z_q
     qplus2 = q2 + Pq - M^2/4
     qminus2 = q2 - Pq - M^2/4
