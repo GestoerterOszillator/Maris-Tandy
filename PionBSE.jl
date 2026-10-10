@@ -6,8 +6,8 @@ using LaTeXStrings
 using ProgressMeter
 using Roots
 
-const address = "C:\\Users\\johnf\\Repositories\\Maris-Tandy\\thesis\\images\\"
-# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+# const address = "C:\\Users\\johnf\\Repositories\\Maris-Tandy\\thesis\\images\\"
+const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
 # const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
 
 const m = 0.0037
@@ -105,11 +105,11 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 512, an
     end
 
     max_iter = 50
-    p = Progress(max_iter, desc = "Berechne...")
+    progress = Progress(max_iter)
 
     for i in 1:max_iter
         A, B, Z_2, Z_4m, max_error = update(A, B, Z_2, Z_4m)
-        next!(p)
+        next!(progress)
         if max_error < 1e-8
             println()
             break
