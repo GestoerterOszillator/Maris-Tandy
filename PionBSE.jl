@@ -19,7 +19,7 @@ const gamma_m = 0.48 # 12/(33 - 2 * Nf{4}) = 0.48
 const mu = 19.0
 const C_f = 4/3
 
-function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 512, angular_steps::Int = 64)
+function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, angular_steps::Int = 64)
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausschebyshevu(angular_steps)
 
@@ -135,31 +135,6 @@ savefig(address * "realp.pdf")
 imagp = -10:0.005:-0.001
 plot(imagp, real.(B.(imagp) ./ A.(imagp)), xlims = (-10, 0), ylims = (0, 10.0))
 savefig(address * "imagp.pdf")
-
-function build_AB(M, radial_steps, angular_steps)
-    x, _ = gausslegendre(radial_steps)
-    z, _ = gausslegendre(angular_steps)
-    t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
-    q2 = exp.(t)
-
-    Ap = Vector{ComplexF64}(undef, radial_steps*angular_steps)
-    Am = Vector{ComplexF64}(undef, radial_steps*angular_steps)
-    Bp = Vector{ComplexF64}(undef, radial_steps*angular_steps)
-    Bm = Vector{ComplexF64}(undef, radial_steps*angular_steps)
-
-    for k in 1:radial_steps
-        for l in 1:angular_steps
-            kl = (k-1)*angular_steps + l
-            qplus2  = q2[k] + im*M*sqrt(q2[k])*z[l] - M^2/4
-            qminus2 = q2[k] - im*M*sqrt(q2[k])*z[l] - M^2/4
-            Ap[kl] = A(qplus2)
-            Am[kl] = A(qminus2)
-            Bp[kl] = B(qplus2)
-            Bm[kl] = B(qminus2)
-        end
-    end
-    return Ap, Am, Bp, Bm
-end
 
 function EE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # k2 = p2 + q2 - 2*pq
@@ -408,16 +383,41 @@ function HH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
       Delta^-1*P2^2*pq
 end
 
-function entries(Func, M, p2, q2, z_q, Aplus, Aminus, Bplus, Bminus; w = 0.4, D = 0.93312, y_steps = 8, beta = pi/4)
+function build_AB(M, radial_steps, angular_steps)
+    x, _ = gausslegendre(radial_steps)
+    z, _ = gausslegendre(angular_steps)
+    t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
+    q2 = exp.(t)
+
+    Ap = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+    Am = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+    Bp = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+    Bm = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+
+    for k in 1:radial_steps
+        for l in 1:angular_steps
+            kl = (k-1)*angular_steps + l
+            qplus2  = q2[k] + im*M*sqrt(q2[k])*z[l] - M^2/4
+            qminus2 = q2[k] - im*M*sqrt(q2[k])*z[l] - M^2/4
+            Ap[kl] = A(qplus2)
+            Am[kl] = A(qminus2)
+            Bp[kl] = B(qplus2)
+            Bm[kl] = B(qminus2)
+        end
+    end
+    return Ap, Am, Bp, Bm
+end
+
+function entries(Func, M, p2, q2, z_q, Aplus, Aminus, Bplus, Bminus; w = 0.4, D = 0.93312, y_steps = 32, beta = pi/4)
     pP = im*M*sqrt(p2)*cos(beta)
     Pq = im*M*sqrt(q2)*z_q
-    pq(y) = sqrt(p2*q2)*(sin(beta)*y*sqrt(1-z_q^2) + cos(beta))
+    pq(y) = sqrt(p2*q2)*(sin(beta)*y*sqrt(1-z_q^2) + cos(beta)*z_q)
     qplus2 = q2 + Pq - M^2/4
     qminus2 = q2 - Pq - M^2/4
     alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
     alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
-    k2_val(y) = p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)
+    k2_val(y) = p2 + q2 - 2*pq(y)
     y, w_y = gausslegendre(y_steps)
     y_integral = sum(@. w_y * alpha(k2_val(y)) * Func(p2, q2, -M^2, pP, pq(y), Pq, Aplus, Aminus, Bplus, Bminus))
     return - C_f * 1/(2pi)^2 * Z_2^2 * q2^2 * sqrt(1-z_q^2)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * y_integral
@@ -430,6 +430,7 @@ function build_kappa(Func, M, t, z, w_t, w_z)
     Ap, Am, Bp, Bm = build_AB(M, radial_steps, angular_steps)
     Kappa = Matrix{ComplexF64}(undef, N, N)
 
+    # Threads.@threads for k in 1:radial_steps
     for k in 1:radial_steps
         for l in 1:angular_steps
             col = (k - 1) * angular_steps + l
@@ -445,14 +446,14 @@ function build_kappa(Func, M, t, z, w_t, w_z)
     return Kappa
 end
 
-function lambda(M; radial_steps::Int = 32, angular_steps::Int = 16)
+function lambda(M; radial_steps::Int = 64, angular_steps::Int = 16)
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausslegendre(angular_steps)
 
     t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
     w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
 
-    progress = Progress(16, desc = "BSE, M = $M:")
+    progress = Progress(16, desc = "BSE, M = $(round(M; digits = 3)):")
     kEE = build_kappa(EE, M, t, z, w_t, w_z)
     next!(progress)
     kEF = build_kappa(EF, M, t, z, w_t, w_z)
@@ -495,5 +496,4 @@ function lambda(M; radial_steps::Int = 32, angular_steps::Int = 16)
     return real(states.values[end]), real.(states.vectors[:, end])
 end
 
-lambda(0.14)
-# @time find_zero(M -> lambda(M)[1] - 1, (0.05, 0.2))
+@time find_zero(M -> lambda(M)[1] - 1, 0.14)
