@@ -6,9 +6,13 @@ using LaTeXStrings
 using ProgressMeter
 using Roots
 
-const address = "C:\\Users\\johnf\\Repositories\\Maris-Tandy\\thesis\\images\\"
-# const address = "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
-# const address = "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
+const address = if Sys.iswindows()
+    "C:\\Users\\johnf\\Repositories\\Maris-Tandy\\thesis\\images\\"
+elseif Sys.isapple()
+    "/Users/johnreeg/Documents/Repositories/Maris-Tandy/thesis/images/"
+else
+    "/home/john-reeg/Documents/Maris-Tandy/thesis/images/"
+end
 
 const m = 0.0037
 const Lambda2 = 1e6
@@ -160,8 +164,7 @@ function EG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # qk = pq - q2
     # Pk = pP - Pq
     # Delta = pP^2 - p2*P2
-    return - 3/2*Aminus*Bplus*Pq^2 + 3*Aminus*Bplus*q2*Pq - 3/2*Aplus*Bminus*
-      Pq^2 - 3*Aplus*Bminus*q2*Pq
+    return - 3/2*Aminus*Bplus*Pq^2 + 3*Aminus*Bplus*q2*Pq - 3/2*Aplus*Bminus*Pq^2 - 3*Aplus*Bminus*q2*Pq
 end
 
 function EH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -170,7 +173,7 @@ function EH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # qk = pq - q2
     # Pk = pP - Pq
     # Delta = pP^2 - p2*P2
-    return  - 6*Aplus*Aminus*Pq^2 + 6*Aplus*Aminus*P2*q2
+    return - 6*Aplus*Aminus*Pq^2 + 6*Aplus*Aminus*P2*q2
 end
 
 function FE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -179,15 +182,7 @@ function FE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return - Aminus*Bplus*Delta^-1*k2^-1*pP*pk*Pk + 2*Aminus*Bplus*Delta^-1*
-      k2^-1*pP*pk*qk + Aminus*Bplus*Delta^-1*pP*pq - 1/2*Aminus*Bplus*Delta^-1*
-      pP^2 + Aminus*Bplus*Delta^-1*p2*k2^-1*Pk^2 - 2*Aminus*Bplus*Delta^-1*p2*
-      k2^-1*qk*Pk - Aminus*Bplus*Delta^-1*p2*Pq + 1/2*Aminus*Bplus*Delta^-1*
-      p2*P2 - Aplus*Bminus*Delta^-1*k2^-1*pP*pk*Pk - 2*Aplus*Bminus*Delta^-1*
-      k2^-1*pP*pk*qk - Aplus*Bminus*Delta^-1*pP*pq - 1/2*Aplus*Bminus*Delta^-1*
-      pP^2 + Aplus*Bminus*Delta^-1*p2*k2^-1*Pk^2 + 2*Aplus*Bminus*Delta^-1*p2*
-      k2^-1*qk*Pk + Aplus*Bminus*Delta^-1*p2*Pq + 1/2*Aplus*Bminus*Delta^-1*
-      p2*P2
+    return - Aminus*Bplus*Delta^-1*k2^-1*pP*pk*Pk + 2*Aminus*Bplus*Delta^-1*k2^-1*pP*pk*qk + Aminus*Bplus*Delta^-1*pP*pq - 1/2*Aminus*Bplus*Delta^-1*pP^2 + Aminus*Bplus*Delta^-1*p2*k2^-1*Pk^2 - 2*Aminus*Bplus*Delta^-1*p2*k2^-1*qk*Pk - Aminus*Bplus*Delta^-1*p2*Pq + 1/2*Aminus*Bplus*Delta^-1*p2*P2 - Aplus*Bminus*Delta^-1*k2^-1*pP*pk*Pk - 2*Aplus*Bminus*Delta^-1*k2^-1*pP*pk*qk - Aplus*Bminus*Delta^-1*pP*pq - 1/2*Aplus*Bminus*Delta^-1*pP^2 + Aplus*Bminus*Delta^-1*p2*k2^-1*Pk^2 + 2*Aplus*Bminus*Delta^-1*p2*k2^-1*qk*Pk + Aplus*Bminus*Delta^-1*p2*Pq + 1/2*Aplus*Bminus*Delta^-1*p2*P2
 end
 
 function FF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -196,16 +191,7 @@ function FF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return 2*Bplus*Bminus*Delta^-1*k2^-1*pP*pk*Pk - 2*Bplus*Bminus*Delta^-1*
-      pP^2 - 2*Bplus*Bminus*Delta^-1*p2*k2^-1*Pk^2 + 2*Bplus*Bminus*Delta^-1*
-      p2*P2 + 3*Bplus*Bminus + 4*Aplus*Aminus*Delta^-1*k2^-1*pP*Pq*pk*qk + 2*
-      Aplus*Aminus*Delta^-1*pP*pq*Pq - 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pP*pk*
-      Pk + 2*Aplus*Aminus*Delta^-1*q2*pP^2 - 1/2*Aplus*Aminus*Delta^-1*P2*
-      k2^-1*pP*pk*Pk - Aplus*Aminus*Delta^-1*P2*pP^2 - 4*Aplus*Aminus*Delta^-1*
-      p2*k2^-1*Pq*qk*Pk - 2*Aplus*Aminus*Delta^-1*p2*Pq^2 + 2*Aplus*Aminus*
-      Delta^-1*p2*q2*k2^-1*Pk^2 + 1/2*Aplus*Aminus*Delta^-1*p2*P2*k2^-1*Pk^2
-       - 2*Aplus*Aminus*Delta^-1*p2*P2*q2 + Aplus*Aminus*Delta^-1*p2*P2^2 - 3*
-      Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
+    return 2*Bplus*Bminus*Delta^-1*k2^-1*pP*pk*Pk - 2*Bplus*Bminus*Delta^-1*pP^2 - 2*Bplus*Bminus*Delta^-1*p2*k2^-1*Pk^2 + 2*Bplus*Bminus*Delta^-1*p2*P2 + 3*Bplus*Bminus + 4*Aplus*Aminus*Delta^-1*k2^-1*pP*Pq*pk*qk + 2*Aplus*Aminus*Delta^-1*pP*pq*Pq - 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pP*pk*Pk + 2*Aplus*Aminus*Delta^-1*q2*pP^2 - 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*pP*pk*Pk - Aplus*Aminus*Delta^-1*P2*pP^2 - 4*Aplus*Aminus*Delta^-1*p2*k2^-1*Pq*qk*Pk - 2*Aplus*Aminus*Delta^-1*p2*Pq^2 + 2*Aplus*Aminus*Delta^-1*p2*q2*k2^-1*Pk^2 + 1/2*Aplus*Aminus*Delta^-1*p2*P2*k2^-1*Pk^2 - 2*Aplus*Aminus*Delta^-1*p2*P2*q2 + Aplus*Aminus*Delta^-1*p2*P2^2 - 3*Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
 end
 
 function FG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -214,15 +200,7 @@ function FG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return 2*Bplus*Bminus*Delta^-1*k2^-1*pP*Pq*pk*qk + Bplus*Bminus*Delta^-1*
-      pP*pq*Pq - 2*Bplus*Bminus*Delta^-1*p2*k2^-1*Pq*qk*Pk - Bplus*Bminus*
-      Delta^-1*p2*Pq^2 - Aplus*Aminus*Delta^-1*k2^-1*pP*Pq^2*pk*Pk - 1/2*Aplus*
-      Aminus*Delta^-1*pP^2*Pq^2 + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pP*Pq*pk*
-      qk + Aplus*Aminus*Delta^-1*q2*pP*pq*Pq + 1/2*Aplus*Aminus*Delta^-1*P2*
-      k2^-1*pP*Pq*pk*qk + 1/4*Aplus*Aminus*Delta^-1*P2*pP*pq*Pq + Aplus*Aminus*
-      Delta^-1*p2*k2^-1*Pq^2*Pk^2 - 2*Aplus*Aminus*Delta^-1*p2*q2*k2^-1*Pq*qk*
-      Pk - Aplus*Aminus*Delta^-1*p2*q2*Pq^2 - 1/2*Aplus*Aminus*Delta^-1*p2*P2*
-      k2^-1*Pq*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*p2*P2*Pq^2
+    return 2*Bplus*Bminus*Delta^-1*k2^-1*pP*Pq*pk*qk + Bplus*Bminus*Delta^-1*pP*pq*Pq - 2*Bplus*Bminus*Delta^-1*p2*k2^-1*Pq*qk*Pk - Bplus*Bminus*Delta^-1*p2*Pq^2 - Aplus*Aminus*Delta^-1*k2^-1*pP*Pq^2*pk*Pk - 1/2*Aplus*Aminus*Delta^-1*pP^2*Pq^2 + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pP*Pq*pk*qk + Aplus*Aminus*Delta^-1*q2*pP*pq*Pq + 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*pP*Pq*pk*qk + 1/4*Aplus*Aminus*Delta^-1*P2*pP*pq*Pq + Aplus*Aminus*Delta^-1*p2*k2^-1*Pq^2*Pk^2 - 2*Aplus*Aminus*Delta^-1*p2*q2*k2^-1*Pq*qk*Pk - Aplus*Aminus*Delta^-1*p2*q2*Pq^2 - 1/2*Aplus*Aminus*Delta^-1*p2*P2*k2^-1*Pq*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*p2*P2*Pq^2
 end
 
 function FH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -231,24 +209,7 @@ function FH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return 2*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*pk*Pk + 4*Aminus*Bplus*Delta^-1*
-    k2^-1*pP*Pq*pk*qk + 2*Aminus*Bplus*Delta^-1*pP*pq*Pq - 2*Aminus*Bplus*
-      Delta^-1*pP^2*Pq - 4*Aminus*Bplus*Delta^-1*q2*k2^-1*pP*pk*Pk + 4*Aminus*
-      Bplus*Delta^-1*q2*pP^2 - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP*pk*qk - 
-      Aminus*Bplus*Delta^-1*P2*pP*pq - 2*Aminus*Bplus*Delta^-1*p2*k2^-1*Pq*
-      Pk^2 - 4*Aminus*Bplus*Delta^-1*p2*k2^-1*Pq*qk*Pk - 2*Aminus*Bplus*
-      Delta^-1*p2*Pq^2 + 4*Aminus*Bplus*Delta^-1*p2*q2*k2^-1*Pk^2 + 2*Aminus*
-      Bplus*Delta^-1*p2*P2*k2^-1*qk*Pk + 3*Aminus*Bplus*Delta^-1*p2*P2*Pq - 4*
-      Aminus*Bplus*Delta^-1*p2*P2*q2 + 3*Aminus*Bplus*Pq - 6*Aminus*Bplus*q2
-       - 2*Aplus*Bminus*Delta^-1*k2^-1*pP*Pq*pk*Pk + 4*Aplus*Bminus*Delta^-1*
-      k2^-1*pP*Pq*pk*qk + 2*Aplus*Bminus*Delta^-1*pP*pq*Pq + 2*Aplus*Bminus*
-      Delta^-1*pP^2*Pq - 4*Aplus*Bminus*Delta^-1*q2*k2^-1*pP*pk*Pk + 4*Aplus*
-      Bminus*Delta^-1*q2*pP^2 + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*pP*pk*qk + 
-      Aplus*Bminus*Delta^-1*P2*pP*pq + 2*Aplus*Bminus*Delta^-1*p2*k2^-1*Pq*
-      Pk^2 - 4*Aplus*Bminus*Delta^-1*p2*k2^-1*Pq*qk*Pk - 2*Aplus*Bminus*
-      Delta^-1*p2*Pq^2 + 4*Aplus*Bminus*Delta^-1*p2*q2*k2^-1*Pk^2 - 2*Aplus*
-      Bminus*Delta^-1*p2*P2*k2^-1*qk*Pk - 3*Aplus*Bminus*Delta^-1*p2*P2*Pq - 4*
-      Aplus*Bminus*Delta^-1*p2*P2*q2 - 3*Aplus*Bminus*Pq - 6*Aplus*Bminus*q2
+    return 2*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*pk*Pk + 4*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*pk*qk + 2*Aminus*Bplus*Delta^-1*pP*pq*Pq - 2*Aminus*Bplus*Delta^-1*pP^2*Pq - 4*Aminus*Bplus*Delta^-1*q2*k2^-1*pP*pk*Pk + 4*Aminus*Bplus*Delta^-1*q2*pP^2 - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP*pk*qk - Aminus*Bplus*Delta^-1*P2*pP*pq - 2*Aminus*Bplus*Delta^-1*p2*k2^-1*Pq*Pk^2 - 4*Aminus*Bplus*Delta^-1*p2*k2^-1*Pq*qk*Pk - 2*Aminus*Bplus*Delta^-1*p2*Pq^2 + 4*Aminus*Bplus*Delta^-1*p2*q2*k2^-1*Pk^2 + 2*Aminus*Bplus*Delta^-1*p2*P2*k2^-1*qk*Pk + 3*Aminus*Bplus*Delta^-1*p2*P2*Pq - 4*Aminus*Bplus*Delta^-1*p2*P2*q2 + 3*Aminus*Bplus*Pq - 6*Aminus*Bplus*q2 - 2*Aplus*Bminus*Delta^-1*k2^-1*pP*Pq*pk*Pk + 4*Aplus*Bminus*Delta^-1*k2^-1*pP*Pq*pk*qk + 2*Aplus*Bminus*Delta^-1*pP*pq*Pq + 2*Aplus*Bminus*Delta^-1*pP^2*Pq - 4*Aplus*Bminus*Delta^-1*q2*k2^-1*pP*pk*Pk + 4*Aplus*Bminus*Delta^-1*q2*pP^2 + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*pP*pk*qk + Aplus*Bminus*Delta^-1*P2*pP*pq + 2*Aplus*Bminus*Delta^-1*p2*k2^-1*Pq*Pk^2 - 4*Aplus*Bminus*Delta^-1*p2*k2^-1*Pq*qk*Pk - 2*Aplus*Bminus*Delta^-1*p2*Pq^2 + 4*Aplus*Bminus*Delta^-1*p2*q2*k2^-1*Pk^2 - 2*Aplus*Bminus*Delta^-1*p2*P2*k2^-1*qk*Pk - 3*Aplus*Bminus*Delta^-1*p2*P2*Pq - 4*Aplus*Bminus*Delta^-1*p2*P2*q2 - 3*Aplus*Bminus*Pq - 6*Aplus*Bminus*q2
 end
 
 function GE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -257,13 +218,7 @@ function GE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return - Aminus*Bplus*Delta^-1*k2^-1*Pk^2 + 2*Aminus*Bplus*Delta^-1*k2^-1*
-      qk*Pk + Aminus*Bplus*Delta^-1*Pq + Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*
-      pk*Pk - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*pk*qk - Aminus*Bplus*
-      Delta^-1*P2*pP^-1*pq - Aplus*Bminus*Delta^-1*k2^-1*Pk^2 - 2*Aplus*Bminus*
-      Delta^-1*k2^-1*qk*Pk - Aplus*Bminus*Delta^-1*Pq + Aplus*Bminus*Delta^-1*
-      P2*k2^-1*pP^-1*pk*Pk + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*pk*qk + 
-      Aplus*Bminus*Delta^-1*P2*pP^-1*pq
+    return - Aminus*Bplus*Delta^-1*k2^-1*Pk^2 + 2*Aminus*Bplus*Delta^-1*k2^-1*qk*Pk + Aminus*Bplus*Delta^-1*Pq + Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*pk*Pk - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*pk*qk - Aminus*Bplus*Delta^-1*P2*pP^-1*pq - Aplus*Bminus*Delta^-1*k2^-1*Pk^2 - 2*Aplus*Bminus*Delta^-1*k2^-1*qk*Pk - Aplus*Bminus*Delta^-1*Pq + Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*pk*Pk + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*pk*qk + Aplus*Bminus*Delta^-1*P2*pP^-1*pq
 end
 
 function GF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -272,13 +227,7 @@ function GF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return 2*Bplus*Bminus*Delta^-1*k2^-1*Pk^2 - 2*Bplus*Bminus*Delta^-1*P2*
-      k2^-1*pP^-1*pk*Pk + 4*Aplus*Aminus*Delta^-1*k2^-1*Pq*qk*Pk + 2*Aplus*
-      Aminus*Delta^-1*Pq^2 - 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pk^2 - 4*Aplus*
-      Aminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - 1/2*Aplus*Aminus*Delta^-1*P2*
-      k2^-1*Pk^2 - 2*Aplus*Aminus*Delta^-1*P2*pP^-1*pq*Pq + 2*Aplus*Aminus*
-      Delta^-1*P2*q2*k2^-1*pP^-1*pk*Pk + 1/2*Aplus*Aminus*Delta^-1*P2^2*k2^-1*
-      pP^-1*pk*Pk
+    return 2*Bplus*Bminus*Delta^-1*k2^-1*Pk^2 - 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*pk*Pk + 4*Aplus*Aminus*Delta^-1*k2^-1*Pq*qk*Pk + 2*Aplus*Aminus*Delta^-1*Pq^2 - 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pk^2 - 4*Aplus*Aminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*Pk^2 - 2*Aplus*Aminus*Delta^-1*P2*pP^-1*pq*Pq + 2*Aplus*Aminus*Delta^-1*P2*q2*k2^-1*pP^-1*pk*Pk + 1/2*Aplus*Aminus*Delta^-1*P2^2*k2^-1*pP^-1*pk*Pk
 end
 
 function GG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -287,15 +236,7 @@ function GG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*qk*Pk + Bplus*Bminus*Delta^-1*Pq^2
-       - 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - Bplus*Bminus*
-      Delta^-1*P2*pP^-1*pq*Pq - Aplus*Aminus*Delta^-1*k2^-1*Pq^2*Pk^2 + 2*
-      Aplus*Aminus*Delta^-1*q2*k2^-1*Pq*qk*Pk + Aplus*Aminus*Delta^-1*q2*Pq^2
-       + Aplus*Aminus*Delta^-1*P2*k2^-1*pP^-1*Pq^2*pk*Pk + 1/2*Aplus*Aminus*
-      Delta^-1*P2*k2^-1*Pq*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*P2*Pq^2 - 2*Aplus*
-      Aminus*Delta^-1*P2*q2*k2^-1*pP^-1*Pq*pk*qk - Aplus*Aminus*Delta^-1*P2*
-      q2*pP^-1*pq*Pq - 1/2*Aplus*Aminus*Delta^-1*P2^2*k2^-1*pP^-1*Pq*pk*qk - 1/
-      4*Aplus*Aminus*Delta^-1*P2^2*pP^-1*pq*Pq
+    return 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*qk*Pk + Bplus*Bminus*Delta^-1*Pq^2 - 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - Bplus*Bminus*Delta^-1*P2*pP^-1*pq*Pq - Aplus*Aminus*Delta^-1*k2^-1*Pq^2*Pk^2 + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pq*qk*Pk + Aplus*Aminus*Delta^-1*q2*Pq^2 + Aplus*Aminus*Delta^-1*P2*k2^-1*pP^-1*Pq^2*pk*Pk + 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*Pq*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*P2*Pq^2 - 2*Aplus*Aminus*Delta^-1*P2*q2*k2^-1*pP^-1*Pq*pk*qk - Aplus*Aminus*Delta^-1*P2*q2*pP^-1*pq*Pq - 1/2*Aplus*Aminus*Delta^-1*P2^2*k2^-1*pP^-1*Pq*pk*qk - 1/4*Aplus*Aminus*Delta^-1*P2^2*pP^-1*pq*Pq
 end
 
 function GH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -304,21 +245,7 @@ function GH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return 2*Aminus*Bplus*Delta^-1*k2^-1*Pq*Pk^2 + 4*Aminus*Bplus*Delta^-1*
-      k2^-1*Pq*qk*Pk + 2*Aminus*Bplus*Delta^-1*Pq^2 - 4*Aminus*Bplus*Delta^-1*
-      q2*k2^-1*Pk^2 - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*Pk - 4*
-      Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - 2*Aminus*Bplus*Delta^-1*
-      P2*k2^-1*qk*Pk - 2*Aminus*Bplus*Delta^-1*P2*pP^-1*pq*Pq - Aminus*Bplus*
-      Delta^-1*P2*Pq + 4*Aminus*Bplus*Delta^-1*P2*q2*k2^-1*pP^-1*pk*Pk + 2*
-      Aminus*Bplus*Delta^-1*P2^2*k2^-1*pP^-1*pk*qk + Aminus*Bplus*Delta^-1*
-      P2^2*pP^-1*pq - 2*Aplus*Bminus*Delta^-1*k2^-1*Pq*Pk^2 + 4*Aplus*Bminus*
-      Delta^-1*k2^-1*Pq*qk*Pk + 2*Aplus*Bminus*Delta^-1*Pq^2 - 4*Aplus*Bminus*
-      Delta^-1*q2*k2^-1*Pk^2 + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*Pk
-       - 4*Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk + 2*Aplus*Bminus*
-      Delta^-1*P2*k2^-1*qk*Pk - 2*Aplus*Bminus*Delta^-1*P2*pP^-1*pq*Pq + Aplus*
-      Bminus*Delta^-1*P2*Pq + 4*Aplus*Bminus*Delta^-1*P2*q2*k2^-1*pP^-1*pk*Pk
-       - 2*Aplus*Bminus*Delta^-1*P2^2*k2^-1*pP^-1*pk*qk - Aplus*Bminus*
-      Delta^-1*P2^2*pP^-1*pq
+    return 2*Aminus*Bplus*Delta^-1*k2^-1*Pq*Pk^2 + 4*Aminus*Bplus*Delta^-1*k2^-1*Pq*qk*Pk + 2*Aminus*Bplus*Delta^-1*Pq^2 - 4*Aminus*Bplus*Delta^-1*q2*k2^-1*Pk^2 - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*Pk - 4*Aminus*Bplus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk - 2*Aminus*Bplus*Delta^-1*P2*k2^-1*qk*Pk - 2*Aminus*Bplus*Delta^-1*P2*pP^-1*pq*Pq - Aminus*Bplus*Delta^-1*P2*Pq + 4*Aminus*Bplus*Delta^-1*P2*q2*k2^-1*pP^-1*pk*Pk + 2*Aminus*Bplus*Delta^-1*P2^2*k2^-1*pP^-1*pk*qk + Aminus*Bplus*Delta^-1*P2^2*pP^-1*pq - 2*Aplus*Bminus*Delta^-1*k2^-1*Pq*Pk^2 + 4*Aplus*Bminus*Delta^-1*k2^-1*Pq*qk*Pk + 2*Aplus*Bminus*Delta^-1*Pq^2 - 4*Aplus*Bminus*Delta^-1*q2*k2^-1*Pk^2 + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*Pk - 4*Aplus*Bminus*Delta^-1*P2*k2^-1*pP^-1*Pq*pk*qk + 2*Aplus*Bminus*Delta^-1*P2*k2^-1*qk*Pk - 2*Aplus*Bminus*Delta^-1*P2*pP^-1*pq*Pq + Aplus*Bminus*Delta^-1*P2*Pq + 4*Aplus*Bminus*Delta^-1*P2*q2*k2^-1*pP^-1*pk*Pk - 2*Aplus*Bminus*Delta^-1*P2^2*k2^-1*pP^-1*pk*qk - Aplus*Bminus*Delta^-1*P2^2*pP^-1*pq
 end
 
 function HE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -327,10 +254,7 @@ function HE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return Aplus*Aminus*Delta^-1*k2^-1*Pq*pk*Pk - Aplus*Aminus*Delta^-1*k2^-1*
-      pq*Pk^2 + Aplus*Aminus*Delta^-1*k2^-1*pP*qk*Pk - 1/2*Aplus*Aminus*
-      Delta^-1*pP*Pq - Aplus*Aminus*Delta^-1*P2*k2^-1*pk*qk + 1/2*Aplus*Aminus*
-      Delta^-1*P2*pq
+    return Aplus*Aminus*Delta^-1*k2^-1*Pq*pk*Pk - Aplus*Aminus*Delta^-1*k2^-1*pq*Pk^2 + Aplus*Aminus*Delta^-1*k2^-1*pP*qk*Pk - 1/2*Aplus*Aminus*Delta^-1*pP*Pq - Aplus*Aminus*Delta^-1*P2*k2^-1*pk*qk + 1/2*Aplus*Aminus*Delta^-1*P2*pq
 end
 
 function HF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -339,13 +263,7 @@ function HF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return - Aminus*Bplus*Delta^-1*k2^-1*Pq*pk*Pk + Aminus*Bplus*Delta^-1*
-      k2^-1*pq*Pk^2 - Aminus*Bplus*Delta^-1*k2^-1*pP*qk*Pk + 1/2*Aminus*Bplus*
-      Delta^-1*pP*Pq + Aminus*Bplus*Delta^-1*P2*k2^-1*pk*qk - 1/2*Aminus*Bplus*
-      Delta^-1*P2*pq - Aplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + Aplus*Bminus*
-      Delta^-1*k2^-1*pq*Pk^2 - Aplus*Bminus*Delta^-1*k2^-1*pP*qk*Pk + 1/2*
-      Aplus*Bminus*Delta^-1*pP*Pq + Aplus*Bminus*Delta^-1*P2*k2^-1*pk*qk - 1/2*
-      Aplus*Bminus*Delta^-1*P2*pq
+    return - Aminus*Bplus*Delta^-1*k2^-1*Pq*pk*Pk + Aminus*Bplus*Delta^-1*k2^-1*pq*Pk^2 - Aminus*Bplus*Delta^-1*k2^-1*pP*qk*Pk + 1/2*Aminus*Bplus*Delta^-1*pP*Pq + Aminus*Bplus*Delta^-1*P2*k2^-1*pk*qk - 1/2*Aminus*Bplus*Delta^-1*P2*pq - Aplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + Aplus*Bminus*Delta^-1*k2^-1*pq*Pk^2 - Aplus*Bminus*Delta^-1*k2^-1*pP*qk*Pk + 1/2*Aplus*Bminus*Delta^-1*pP*Pq + Aplus*Bminus*Delta^-1*P2*k2^-1*pk*qk - 1/2*Aplus*Bminus*Delta^-1*P2*pq
 end
 
 function HG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -354,14 +272,7 @@ function HG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return - 1/2*Aminus*Bplus*Delta^-1*k2^-1*Pq^2*pk*Pk + 1/2*Aminus*Bplus*
-      Delta^-1*k2^-1*pq*Pq*Pk^2 - 1/2*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*qk*Pk
-       + 1/4*Aminus*Bplus*Delta^-1*pP*Pq^2 + 1/2*Aminus*Bplus*Delta^-1*P2*
-      k2^-1*Pq*pk*qk - 1/4*Aminus*Bplus*Delta^-1*P2*pq*Pq + 1/2*Aplus*Bminus*
-      Delta^-1*k2^-1*Pq^2*pk*Pk - 1/2*Aplus*Bminus*Delta^-1*k2^-1*pq*Pq*Pk^2
-       + 1/2*Aplus*Bminus*Delta^-1*k2^-1*pP*Pq*qk*Pk - 1/4*Aplus*Bminus*
-      Delta^-1*pP*Pq^2 - 1/2*Aplus*Bminus*Delta^-1*P2*k2^-1*Pq*pk*qk + 1/4*
-      Aplus*Bminus*Delta^-1*P2*pq*Pq
+    return - 1/2*Aminus*Bplus*Delta^-1*k2^-1*Pq^2*pk*Pk + 1/2*Aminus*Bplus*Delta^-1*k2^-1*pq*Pq*Pk^2 - 1/2*Aminus*Bplus*Delta^-1*k2^-1*pP*Pq*qk*Pk + 1/4*Aminus*Bplus*Delta^-1*pP*Pq^2 + 1/2*Aminus*Bplus*Delta^-1*P2*k2^-1*Pq*pk*qk - 1/4*Aminus*Bplus*Delta^-1*P2*pq*Pq + 1/2*Aplus*Bminus*Delta^-1*k2^-1*Pq^2*pk*Pk - 1/2*Aplus*Bminus*Delta^-1*k2^-1*pq*Pq*Pk^2 + 1/2*Aplus*Bminus*Delta^-1*k2^-1*pP*Pq*qk*Pk - 1/4*Aplus*Bminus*Delta^-1*pP*Pq^2 - 1/2*Aplus*Bminus*Delta^-1*P2*k2^-1*Pq*pk*qk + 1/4*Aplus*Bminus*Delta^-1*P2*pq*Pq
 end
 
 function HH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
@@ -370,17 +281,7 @@ function HH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     qk = pq - q2
     Pk = pP - Pq
     Delta = pP^2 - p2*P2
-    return - 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + 2*Bplus*Bminus*Delta^-1*
-      k2^-1*pq*Pk^2 - 2*Bplus*Bminus*Delta^-1*k2^-1*pP*qk*Pk + Bplus*Bminus*
-      Delta^-1*pP*Pq + 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pk*qk - Bplus*Bminus*
-      Delta^-1*P2*pq + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pq*pk*Pk - 2*Aplus*
-      Aminus*Delta^-1*q2*k2^-1*pq*Pk^2 + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pP*
-      qk*Pk - Aplus*Aminus*Delta^-1*q2*pP*Pq - 1/2*Aplus*Aminus*Delta^-1*P2*
-      k2^-1*Pq*pk*Pk + 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*pq*Pk^2 - 1/2*Aplus*
-      Aminus*Delta^-1*P2*k2^-1*pP*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*P2*pP*Pq
-       - 2*Aplus*Aminus*Delta^-1*P2*q2*k2^-1*pk*qk + Aplus*Aminus*Delta^-1*P2*
-      q2*pq + 1/2*Aplus*Aminus*Delta^-1*P2^2*k2^-1*pk*qk - 1/4*Aplus*Aminus*
-      Delta^-1*P2^2*pq
+    return - 2*Bplus*Bminus*Delta^-1*k2^-1*Pq*pk*Pk + 2*Bplus*Bminus*Delta^-1*k2^-1*pq*Pk^2 - 2*Bplus*Bminus*Delta^-1*k2^-1*pP*qk*Pk + Bplus*Bminus*Delta^-1*pP*Pq + 2*Bplus*Bminus*Delta^-1*P2*k2^-1*pk*qk - Bplus*Bminus*Delta^-1*P2*pq + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*Pq*pk*Pk - 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pq*Pk^2 + 2*Aplus*Aminus*Delta^-1*q2*k2^-1*pP*qk*Pk - Aplus*Aminus*Delta^-1*q2*pP*Pq - 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*Pq*pk*Pk + 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*pq*Pk^2 - 1/2*Aplus*Aminus*Delta^-1*P2*k2^-1*pP*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*P2*pP*Pq - 2*Aplus*Aminus*Delta^-1*P2*q2*k2^-1*pk*qk + Aplus*Aminus*Delta^-1*P2*q2*pq + 1/2*Aplus*Aminus*Delta^-1*P2^2*k2^-1*pk*qk - 1/4*Aplus*Aminus*Delta^-1*P2^2*pq
 end
 
 function build_AB(M, radial_steps, angular_steps)
@@ -436,10 +337,9 @@ function build_kappa(Func, M, t, z, w_t, w_z)
             col = (k - 1) * angular_steps + l
             w = w_t[k] * w_z[l]
             for i in 1:radial_steps
-                # entries hängt nicht von z[j] ab -> z[1] ist nur Platzhalter
                 val = w * entries(Func, M, q2[i], q2[k], z[l], Ap[col], Am[col], Bp[col], Bm[col])
                 rows = (i - 1) * angular_steps + 1 : i * angular_steps
-                @views Kappa[rows, col] .= val   # alle j auf einmal, zusammenhängend im Speicher
+                @views Kappa[rows, col] .= val
             end
         end
     end
@@ -496,4 +396,4 @@ function lambda(M; radial_steps::Int = 64, angular_steps::Int = 16)
     return real(states.values[end]), real.(states.vectors[:, end])
 end
 
-@time find_zero(M -> lambda(M)[1] - 1, 0.14)
+@time find_zero(M -> lambda(M)[1] - 1, 0.141) # 0.1408955741336375
