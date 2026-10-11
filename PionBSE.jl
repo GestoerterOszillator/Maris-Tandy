@@ -17,8 +17,9 @@ const Lambda_PV = 2e2
 const Lambda_QCD = 0.234
 const gamma_m = 0.48 # 12/(33 - 2 * Nf{4}) = 0.48
 const mu = 19.0
+const C_f = 4/3
 
-function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 512, angular_steps::Int = 64)
+function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 512, angular_steps::Int = 64)
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausschebyshevu(angular_steps)
 
@@ -105,7 +106,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 512, an
     end
 
     max_iter = 50
-    progress = Progress(max_iter)
+    progress = Progress(41, desc = "Quark DSE:")
 
     for i in 1:max_iter
         A, B, Z_2, Z_4m, max_error = update(A, B, Z_2, Z_4m)
@@ -124,7 +125,7 @@ function Teil_Eins(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 512, an
     return t, A_func, B_func, Z_2, Z_4m
 end
 
-@time t, A, B, Z_2, Z_4m = Teil_Eins(0.4, 0.93312, false)
+@time t, A, B, Z_2, Z_4m = QuarkDSE(0.4, 0.93312, false)
 
 plot(exp.(t), real.(A.(exp.(t))), xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
     yticks = 0.4:0.4:2.0)
@@ -135,11 +136,32 @@ imagp = -10:0.005:-0.001
 plot(imagp, real.(B.(imagp) ./ A.(imagp)), xlims = (-10, 0), ylims = (0, 10.0))
 savefig(address * "imagp.pdf")
 
-function EE(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function build_AB(M, radial_steps, angular_steps)
+    x, _ = gausslegendre(radial_steps)
+    z, _ = gausslegendre(angular_steps)
+    t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
+    q2 = exp.(t)
+
+    Ap = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+    Am = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+    Bp = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+    Bm = Vector{ComplexF64}(undef, radial_steps*angular_steps)
+
+    for k in 1:radial_steps
+        for l in 1:angular_steps
+            kl = (k-1)*angular_steps + l
+            qplus2  = q2[k] + im*M*sqrt(q2[k])*z[l] - M^2/4
+            qminus2 = q2[k] - im*M*sqrt(q2[k])*z[l] - M^2/4
+            Ap[kl] = A(qplus2)
+            Am[kl] = A(qminus2)
+            Bp[kl] = B(qplus2)
+            Bm[kl] = B(qminus2)
+        end
+    end
+    return Ap, Am, Bp, Bm
+end
+
+function EE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # k2 = p2 + q2 - 2*pq
     # pk = p2 - pq
     # qk = pq - q2
@@ -148,11 +170,7 @@ function EE(p2, q2, P2, pP, pq, Pq)
     return - 3*Bplus*Bminus - 3*Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
 end
 
-function EF(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function EF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # k2 = p2 + q2 - 2*pq
     # pk = p2 - pq
     # qk = pq - q2
@@ -161,11 +179,7 @@ function EF(p2, q2, P2, pP, pq, Pq)
     return 3*Aminus*Bplus*Pq - 3/2*Aminus*Bplus*P2 - 3*Aplus*Bminus*Pq - 3/2*Aplus*Bminus*P2
 end
 
-function EG(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function EG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # k2 = p2 + q2 - 2*pq
     # pk = p2 - pq
     # qk = pq - q2
@@ -175,11 +189,7 @@ function EG(p2, q2, P2, pP, pq, Pq)
       Pq^2 - 3*Aplus*Bminus*q2*Pq
 end
 
-function EH(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    # Bplus = B(q2 + Pq + P2/4)
-    # Bminus = B(q2 - Pq + P2/4)
+function EH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     # k2 = p2 + q2 - 2*pq
     # pk = p2 - pq
     # qk = pq - q2
@@ -188,11 +198,7 @@ function EH(p2, q2, P2, pP, pq, Pq)
     return  - 6*Aplus*Aminus*Pq^2 + 6*Aplus*Aminus*P2*q2
 end
 
-function FE(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function FE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -209,11 +215,7 @@ function FE(p2, q2, P2, pP, pq, Pq)
       p2*P2
 end
 
-function FF(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function FF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -231,11 +233,7 @@ function FF(p2, q2, P2, pP, pq, Pq)
       Aplus*Aminus*q2 + 3/4*Aplus*Aminus*P2
 end
 
-function FG(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function FG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -252,11 +250,7 @@ function FG(p2, q2, P2, pP, pq, Pq)
       k2^-1*Pq*qk*Pk + 1/4*Aplus*Aminus*Delta^-1*p2*P2*Pq^2
 end
 
-function FH(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function FH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -282,11 +276,7 @@ function FH(p2, q2, P2, pP, pq, Pq)
       Aplus*Bminus*Delta^-1*p2*P2*q2 - 3*Aplus*Bminus*Pq - 6*Aplus*Bminus*q2
 end
 
-function GE(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function GE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -301,11 +291,7 @@ function GE(p2, q2, P2, pP, pq, Pq)
       Aplus*Bminus*Delta^-1*P2*pP^-1*pq
 end
 
-function GF(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function GF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -320,11 +306,7 @@ function GF(p2, q2, P2, pP, pq, Pq)
       pP^-1*pk*Pk
 end
 
-function GG(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function GG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -341,11 +323,7 @@ function GG(p2, q2, P2, pP, pq, Pq)
       4*Aplus*Aminus*Delta^-1*P2^2*pP^-1*pq*Pq
 end
 
-function GH(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function GH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -368,11 +346,7 @@ function GH(p2, q2, P2, pP, pq, Pq)
       Delta^-1*P2^2*pP^-1*pq
 end
 
-function HE(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    # Bplus = B(q2 + Pq + P2/4)
-    # Bminus = B(q2 - Pq + P2/4)
+function HE(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -384,11 +358,7 @@ function HE(p2, q2, P2, pP, pq, Pq)
       Delta^-1*P2*pq
 end
 
-function HF(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function HF(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -403,11 +373,7 @@ function HF(p2, q2, P2, pP, pq, Pq)
       Aplus*Bminus*Delta^-1*P2*pq
 end
 
-function HG(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function HG(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -423,11 +389,7 @@ function HG(p2, q2, P2, pP, pq, Pq)
       Aplus*Bminus*Delta^-1*P2*pq*Pq
 end
 
-function HH(p2, q2, P2, pP, pq, Pq)
-    Aplus = A(q2 + Pq + P2/4)
-    Aminus = A(q2 - Pq + P2/4)
-    Bplus = B(q2 + Pq + P2/4)
-    Bminus = B(q2 - Pq + P2/4)
+function HH(p2, q2, P2, pP, pq, Pq, Aplus, Aminus, Bplus, Bminus)
     k2 = p2 + q2 - 2*pq
     pk = p2 - pq
     qk = pq - q2
@@ -446,22 +408,18 @@ function HH(p2, q2, P2, pP, pq, Pq)
       Delta^-1*P2^2*pq
 end
 
-function entries(Func, M, p2, q2, z_q; w = 0.4, D = 0.93312, y_steps = 8, beta = pi/4)
+function entries(Func, M, p2, q2, z_q, Aplus, Aminus, Bplus, Bminus; w = 0.4, D = 0.93312, y_steps = 8, beta = pi/4)
     pP = im*M*sqrt(p2)*cos(beta)
     Pq = im*M*sqrt(q2)*z_q
     pq(y) = sqrt(p2*q2)*(sin(beta)*y*sqrt(1-z_q^2) + cos(beta))
     qplus2 = q2 + Pq - M^2/4
     qminus2 = q2 - Pq - M^2/4
-    Aplus = A(qplus2)
-    Aminus = A(qminus2)
-    Bplus = B(qplus2)
-    Bminus = B(qminus2)
     alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
     alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
     alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
     k2_val(y) = p2 + q2 - sqrt(2*p2*q2)*(y*sqrt(1-z_q^2) + z_q)
     y, w_y = gausslegendre(y_steps)
-    y_integral = sum(@. w_y * alpha(k2_val(y)) * Func(p2, q2, -M^2, pP, pq(y), Pq))
+    y_integral = sum(@. w_y * alpha(k2_val(y)) * Func(p2, q2, -M^2, pP, pq(y), Pq, Aplus, Aminus, Bplus, Bminus))
     return - C_f * 1/(2pi)^2 * Z_2^2 * q2^2 * sqrt(1-z_q^2)/((qplus2*Aplus^2 + Bplus^2)*(qminus2*Aminus^2 + Bminus^2)) * y_integral
 end
 
@@ -469,56 +427,73 @@ function build_kappa(Func, M, t, z, w_t, w_z)
     radial_steps, angular_steps = length(t), length(z)
     N = radial_steps * angular_steps
     q2 = exp.(t)
+    Ap, Am, Bp, Bm = build_AB(M, radial_steps, angular_steps)
     Kappa = Matrix{ComplexF64}(undef, N, N)
-    progress = Progress(radial_steps)
 
-    Threads.@threads for k in 1:radial_steps
+    for k in 1:radial_steps
         for l in 1:angular_steps
             col = (k - 1) * angular_steps + l
             w = w_t[k] * w_z[l]
             for i in 1:radial_steps
                 # entries hängt nicht von z[j] ab -> z[1] ist nur Platzhalter
-                val = w * entries(Func, M, q2[i], q2[k], z[l])
+                val = w * entries(Func, M, q2[i], q2[k], z[l], Ap[col], Am[col], Bp[col], Bm[col])
                 rows = (i - 1) * angular_steps + 1 : i * angular_steps
                 @views Kappa[rows, col] .= val   # alle j auf einmal, zusammenhängend im Speicher
             end
         end
-        next!(progress)
     end
     return Kappa
 end
 
-function lambda(M; radial_steps::Int = 32, angular_steps::Int = 8)
+function lambda(M; radial_steps::Int = 32, angular_steps::Int = 16)
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausslegendre(angular_steps)
 
     t = 0.5 * (log(Lambda2) - log(epsilon2)) * x .+ 0.5 * (log(Lambda2) + log(epsilon2))
     w_t = 0.5 * (log(Lambda2) - log(epsilon2)) * w_x
 
+    progress = Progress(16, desc = "BSE, M = $M:")
     kEE = build_kappa(EE, M, t, z, w_t, w_z)
+    next!(progress)
     kEF = build_kappa(EF, M, t, z, w_t, w_z)
+    next!(progress)
     kEG = build_kappa(EG, M, t, z, w_t, w_z)
+    next!(progress)
     kEH = build_kappa(EH, M, t, z, w_t, w_z)
+    next!(progress)
     kFE = build_kappa(FE, M, t, z, w_t, w_z)
+    next!(progress)
     kFF = build_kappa(FF, M, t, z, w_t, w_z)
+    next!(progress)
     kFG = build_kappa(FG, M, t, z, w_t, w_z)
+    next!(progress)
     kFH = build_kappa(FH, M, t, z, w_t, w_z)
+    next!(progress)
     kGE = build_kappa(GE, M, t, z, w_t, w_z)
+    next!(progress)
     kGF = build_kappa(GF, M, t, z, w_t, w_z)
+    next!(progress)
     kGG = build_kappa(GG, M, t, z, w_t, w_z)
+    next!(progress)
     kGH = build_kappa(GH, M, t, z, w_t, w_z)
+    next!(progress)
     kHE = build_kappa(HE, M, t, z, w_t, w_z)
+    next!(progress)
     kHF = build_kappa(HF, M, t, z, w_t, w_z)
+    next!(progress)
     kHG = build_kappa(HG, M, t, z, w_t, w_z)
+    next!(progress)
     kHH = build_kappa(HH, M, t, z, w_t, w_z)
+    next!(progress)
     
     Kappa = [kEE kEF kEG kEH;
              kFE kFF kFG kFH;
              kGE kGF kGG kGH;
              kHE kHF kHG kHH]
 
-    states = eigen(Kappa)
+    @time states = eigen(Kappa)
     return real(states.values[end]), real.(states.vectors[:, end])
 end
 
-find_zero(M -> lambda(M)[1] - 1, 0.14)
+lambda(0.14)
+# @time find_zero(M -> lambda(M)[1] - 1, (0.05, 0.2))
