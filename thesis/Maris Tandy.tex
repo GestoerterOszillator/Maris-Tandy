@@ -1,4 +1,4 @@
-\documentclass{book}
+\documentclass[oneside, openany]{book}
 
 % Mathematical Symbols & Physics Notation
 \usepackage{amsmath}
@@ -40,6 +40,22 @@
 %\addbibresource{references/references.bib}
 \usepackage{pdfpages}
 
+\tikzset{
+	line/.style={semithick, black},
+	dot/.style={line, circle, fill=white, inner sep=0pt, minimum size=2.5mm},
+}
+
+% Gamma: true semicircle, flat side at the local origin, plus double line out
+\newcommand{\gammablob}[1][]{%
+	\begin{scope}[#1]
+		\draw[line] (0,-0.5) arc[start angle=-90, end angle=90, radius=0.5] -- cycle;
+		\node at (0.22,0) {$\Gamma$};
+		\draw[line] (0.5,0.025) -- (0.8,0.025);
+		\draw[line] (0.5,-0.025) -- (0.8,-0.025);
+	\end{scope}
+}
+
+
 % Personalized Commands & Macros
 \renewcommand{\equationautorefname}{eq.}
 \numberwithin{equation}{chapter}
@@ -48,7 +64,8 @@
 \renewcommand{\theHfigure}{\thefigure}
 \newcommand{\ii}{\mathrm{i}}
 \newcommand{\intd}[1]{\int \frac{\dd^4 #1}{(2\pi)^4}}
-\newcommand{\dbar}{\mathchar'26\mkern-11mu \dd}
+% \newcommand{\dbar}{\mathchar'26\mkern-10.5mu \dd}
+\newcommand{\dbar}{\mathord{\mathrm{d}\mkern-8mu\raisebox{0.55em}{\rule{0.38em}{0.05em}}\mkern0.1mu}}
 \newcommand{\p}[0]{\slashed{p}}
 \newcommand{\q}[0]{\slashed{q}}
 \newcommand{\g}[0]{\gamma}
@@ -61,7 +78,6 @@
 \author{John-Frederik Reeg}
 \date{\today}
 
-
 \begin{document}
 
 \begin{titlepage}
@@ -70,12 +86,12 @@
 \vspace*{0.8cm}
 
 \LARGE
-\textbf{Module Todo}
+\textbf{Project in Preparation of the Master's Thesis}
 
 \vspace*{1.5cm}
 
 \Huge
-\textbf{Title Todo}
+\textbf{The Quark DSE and Pion BSE in the Maris-Tandy model}
 
 \vspace*{1.2cm}
 
@@ -107,6 +123,55 @@ Supervisor: Prof. Dr. Christian Fischer \\
 
 \chapter{Theory} \label{ch:2}
 
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}[line width=0.8pt]
+		% Left Bethe-Salpeter amplitude
+		% Circle
+		\draw[fill=white] (0,0.8) -- (0,-0.8)
+		arc[start angle=-90,end angle=90,radius=0.8];
+		% Label
+		\node at (0.35,0) {$\Gamma$};
+		% Legs
+		\draw (-0.3, 0.75)--(0, 0.75) 
+			  (-0.3,-0.75)--(0,-0.75);
+		% Meson
+		\draw (0.8, 0.04)--(1.0, 0.04)
+			  (0.8,-0.04)--(1.0,-0.04);
+		
+		% Equals sign
+		\node[font=\Large ] at (1.6,-0.07) {$\texttt{=}$};
+		
+		% Interaction kernel
+		% Box
+		\draw[fill=white] (2.4,-0.8) rectangle (3,0.8);
+		% Label
+		\node at (2.7,0) {$K$};
+		% Legs
+		\draw (2.1, 0.75)--(2.4, 0.75)
+			  (2.1,-0.75)--(2.4,-0.75);
+		
+		% Quark propagators
+		\draw (3, 0.75)--(4.2, 0.75)
+			  (3,-0.75)--(4.2,-0.75);
+		\draw[fill=white] (3.6, 0.75) circle (0.1)
+						  (3.6,-0.75) circle (0.1);
+		
+		% Right Bethe-Salpeter amplitude
+		\begin{scope}[xshift=4.2cm]
+			% Circle
+			\draw[fill=white] (0,0.8) -- (0,-0.8)
+			arc[start angle=-90,end angle=90,radius=0.8];
+			% Label
+			\node at (0.35,0) {$\Gamma$};
+			% Meson
+			\draw (0.8, 0.04)--(1.0, 0.04)
+				  (0.8,-0.04)--(1.0,-0.04);
+		\end{scope}
+		
+	\end{tikzpicture}
+\end{figure}
+
 \begin{align}
 	\begin{tikzpicture}
 		\begin{feynman}
@@ -118,11 +183,11 @@ Supervisor: Prof. Dr. Christian Fischer \\
 			};
 			\node at (a2) [circle, fill, inner sep=1.6pt] {};
 		\end{feynman}
-	\end{tikzpicture}^{-1}
+	\end{tikzpicture}\Big.^{-1}
 	\quad = \quad
 	\feynmandiagram [medium, layered layout, horizontal=a to b] {
 		a [particle=\(\)] -- b -- c 
-	};^{-1}
+	};\Big.^{-1}
 	\quad - \quad
 	\begin{tikzpicture}
 		\begin{feynman}
@@ -142,6 +207,35 @@ Supervisor: Prof. Dr. Christian Fischer \\
 		\end{feynman}
 	\end{tikzpicture}
 \end{align}
+
+\section{Quark DSE}
+
+
+
+\section{Pion BSE}
+
+\begin{align}
+	G = G_0 + G_0 T G_0
+\end{align}
+
+\begin{align}
+T = K + K G_0 T
+\end{align}
+
+\begin{align}
+	T \propto \frac{\Gamma \bar\Gamma}{P^2 + m^2}
+\end{align}
+
+\begin{align}
+	\Gamma = K G_0 \Gamma
+\end{align}
+
+\begin{align}
+	[\Gamma(p,P)]_{tu} = \int \dbar^4 q \left[ S(q_+) \Gamma(q,P) S(q_-) \right]_{sr} K^{rs}_{tu}(q,k,P)
+\end{align}
+
+$q_\pm = q + \eta_\pm P$
+$q_\pm = q \pm \tfrac{1}{2} P$
 
 \section{Herleitung Esther}
 
@@ -367,6 +461,9 @@ $C_f = \frac{4}{3}$
 	\alpha_\textrm{UV}(k^2) &= \frac{2\pi \gamma_m \left(1-e^{-k^2}\right)}{\ln\left[e^2-1+\left(1+ k^2/\Lambda_\mathrm{QCD}^2\right)^2\right]}
 \end{align}
 
+\chapter{Results}
+\section{Quark DSE}
+
 \begin{figure}[H]
 	\centering
 	\begin{minipage}{0.9\linewidth}
@@ -374,21 +471,33 @@ $C_f = \frac{4}{3}$
 		\begin{subfigure}[t]{0.49\textwidth}
 			\centering
 			\includegraphics[width=\textwidth]{images/realp.pdf}
-			\caption{\phantom{i}}
+			\caption{real $p$}
 			\label{fig:dcs1}
 		\end{subfigure}\hfill
 		\begin{subfigure}[t]{0.49\textwidth}
 			\centering
 			\includegraphics[width=\textwidth]{images/imagp.pdf}
-			\caption{\phantom{i}}
+			\caption{imaginary $p$}
 			\label{fig:dcs2}
 		\end{subfigure}
-		\caption{  } 
+		\caption{ Quark amplitude dependence on real and imaginary momenta } 
 		\label{fig:todo}
 	\end{minipage}
 \end{figure}
 
-\chapter{Pion BSE}
+% Plots:
+% 	alpha(k2) - k2, different w,D
+% A,B - real/imag p, different m
+% 	Z,M - real p
+% 	Z2,Zm - m
+% 	Z2,Zm - mu
+% M_pi - m,w,D
+% 	M_s - m
+% table E,F,G,H - M_pi, M_s
+% E,F,G,H - p, different S,PS
+% B/E scale - p
+
+\section{Pion BSE}
 
 \begin{align}
 	\Gamma_\textrm{PS}(p,P) = \g^5 \left( E(p,P) - \ii \slashed P \, F(p,P) - \ii (p\cdot P) \,\p\; G(p,P) + \left[\p, \slashed P\right]_- H(p,P)  \right)
@@ -585,115 +694,9 @@ Again we keep in mind the translation from Minkowski to Euclidean space, which n
 \begin{align}
 	\int \dd ^4p_M &\rightarrow \ii \int \dd ^4p_E
 \end{align}
-% wick
-\section{Dirac Spinors in Euclidean Space} \label{ch:C}
-The solutions of the free Dirac equation are called the Dirac spinors. In Euclidean space, their representations were extracted from reference 
-\begin{align}
-	u_1(P) &= \sqrt{\frac{E + M}{2M}}
-	\begin{pmatrix}
-		1 \\
-		0 \\
-		\frac{P_z}{E + M} \\
-		\frac{P_x + iP_y}{E + M}
-	\end{pmatrix}, \\
-	u_2(P) &= \sqrt{\frac{E + M}{2M}}
-	\begin{pmatrix}
-		0 \\
-		1 \\
-		\frac{P_x - iP_y}{E + M} \\
-		\frac{-P_z}{E + M}
-	\end{pmatrix}, \\
-	v_1(P) &= \sqrt{\frac{|E| + M}{2M}}
-	\begin{pmatrix}
-		\frac{-P_z}{|E| + M} \\
-		\frac{-(P_x + iP_y)}{|E| + M} \\
-		1 \\
-		0
-	\end{pmatrix}, \\
-	v_2(P) &= \sqrt{\frac{|E| + M}{2M}}
-	\begin{pmatrix}
-		\frac{-(P_x - iP_y)}{|E| + M} \\
-		\frac{P_z}{|E| + M} \\
-		0 \\
-		1
-	\end{pmatrix},
-\end{align}
-for a given four momentum of the form $P = \left( P_x,\, P_y,\, P_z,\, \ii E \right)$. They are normalized with the conditions:
-\begin{align}
-	u_r^\dagger(P)\, u_{r'}(P) &= \frac{|E|}{M}\, \delta_{r,r'} \\
-	u_r^\dagger(P) &= u_r^*(P)\, \gamma_4
-\end{align}
 
-\chapter{Kinematics} \label{ch:D}
-This chapter seeks to visualize the kinematics of the reactions taking place. It serves to explain conventions and chosen reference frames, while also deriving the momenta used in the work above. 
-\section{Breit System} \label{sec:breit}
-The Breit system is a frame of reference often used to describe scattering processes. In it, we demand that the current coupling with a particle transfers only spatial momentum, so the transferred energy $Q_4$ is zero. Also known as the "brick wall frame" or "infinite momentum frame", the collision can therefore be understood as an ideal reflection on an outside particle, at least if the scattered particle does not change its mass. In the context of this work we use the Breit system to describe the coupling of a meson to a baryon, so for the calculation of the form factors
-\subsection{Pion-Nucleon-Nucleon Coupling}
-To calculate the kinematics of a pion-nucleon coupling in the Breit frame, we choose our coordinates so that all $x$ and $y$ momenta are 0:
-\begin{align}
-	Q = Q_3 \hat e_3, \quad P_{i,3} = -P_{f,3}
-\end{align}
-Considering momentum conservation results in the following four momenta:
-\begin{align}
-	Q &= \left( 0,\, 0,\, Q_3,\, 0 \right) \\
-	P_i &= \left( 0,\, 0,\, -\tfrac{1}{2} Q_3,\, \ii \sqrt{M_p^2 + \tfrac{1}{4} Q_3^2} \right) \\
-	P_f &= \left( 0,\, 0,\, +\tfrac{1}{2} Q_3,\, \ii \sqrt{M_p^2 + \tfrac{1}{4} Q_3^2} \right) \label{eq:kin_gpNN}
-\end{align}
-\subsection{Kaon-Nucleon-Lambda Coupling}
-The result from above cannot simply be copied, unfortunately. In the case of nucleon-kaon absorption, the resulting lambda baryon is heavier than the incoming proton. For this to be possible without energy transfer by the kaon, the spatial momentum of the outgoing particle needs to be different in magnitude than its incoming counterpart. Again working only in $z$-direction and taking both energy and momentum conservation into account, we formulate the following four momenta, parameterized by the momentum transfer $Q$.
-\begin{align}
-	Q &= \left( 0,\, 0,\, Q_3,\, 0 \right) \\
-	P_i &= \left( 0,\, 0,\, \frac{M_p^2 - M_\Lambda^2 - Q_3^2}{2Q_3},\, \ii \, \sqrt{M_p^2 + \left( \frac{M_p^2 - M_\Lambda^2 - Q_3^2}{2Q_3} \right)^2} \right) \\
-	P_f &= \left( 0,\, 0,\, \frac{M_p^2 - M_\Lambda^2 + Q_3^2}{2Q_3},\, \ii \, \sqrt{M_\Lambda^2 + \left( \frac{M_p^2 - M_\Lambda^2 + Q_3^2}{2Q_3} \right)^2} \right) \label{eq:kin_gKNL}
-\end{align}
-Although the validity of this approach seems to be sufficiently correct at first, the kinematics break down for small momentum transfers. If the supplied momentum by the exchange meson does not suffice to create a lambda baryon, the calculation becomes problematic. Therefore we solve for the condition
-\begin{align}
-	M_\Lambda^2 \le E^2 = M_\Lambda^2 + \left( \frac{M_p^2 - M_\Lambda^2 + Q_3^2}{2Q_3} \right)^2,
-\end{align}
-which leaves us with a lower bound for the calculation of 
-\begin{align}
-	Q^2 \ge M_\Lambda^2 - M_p^2 =: \Lambda_\text{BF}^2 \approx \SI{0.4}{\giga\electronvolt\squared} \label{eq:condition}
-\end{align}
-Inserting a $Q^2$ below this threshold $\Lambda_\text{BF}^2$ will yield nonphysical results, a problem discussed further in.
-\section{ in the Center of Mass System} \label{sec:com}
-When analyzing moving objects, it is convenient to work in a resting frame of reference, the center of mass system (CM system). Its convenience stems from the property that at any given time the sum of all space-like momenta is 0:
-\begin{align}
-	\sum_i \bm p_i = 0
-\end{align}
-In order to describe the kinematics of the reaction  we will call the four momenta of all participating particles $P,\: \bar P,\: \Lambda,\: \bar\Lambda,$ and $K$. Now we can choose our coordinate system so that the space-like momentum of $\Lambda$ and $\bar\Lambda$ lays in the $x$-axis. The total energy $E_{cm}$ of each baryon as well as the magnitude of the space-like momentum of the protons can easily be calculated, since all baryons involved in this reaction are on-shell:
-\begin{align}
-	E_{cm} &= {\sqrt{\Lambda_x^2 + M_\Lambda^2}} \\
-	|\bm p_{cm}| &= {\sqrt{E_{cm}^2 - M_p^2}}
-\end{align}
-With this, we can outline the kinematic situation of the reaction, where the angle $\theta$ is a new degree of freedom granted by the change in direction before/after the interaction. Without losing generality, we can restrict the reaction to the $x$-$y$-plane.
-\begin{figure}[H]
-	\centering
-	\begin{tikzpicture}[thick, >=stealth]
-		\draw[->] (-2,0) -- (-0.1,0);
-		\node at (-1.8, 0.3) {$\bar{P}$};
-		\draw[<-] (0.1,0) -- (2,0);
-		\node at (1.8, 0.3) {$P$};
-		\draw[->] (-0.1,-0.1) -- (-1.4,-1.4);
-		\node at (-1.5, -1) {$\Lambda$};
-		\draw[->] (0.1,0.1) -- (1.4,1.4);
-		\node at (0.8, 1.3) {$\bar\Lambda$};
-		\draw (0.6,0) arc (0:45:0.6);
-		\node at (0.8,0.3) {$\theta$};
-		\draw[->] (1.58,-1.42) -- (2,-1) node[right] {$x$};
-		\draw[->] (1.42,-1.42) -- (1,-1) node[left] {$y$};
-		\draw (1.5,-1.5) circle (0.12) node[below right] {$z$};
-		\fill (1.5,-1.5) circle (0.035) node[below right] {$z$};
-	\end{tikzpicture}
-	\caption{space-like momenta of the reaction}
-\end{figure}
-\noindent
-Using this figure, we write out the four momenta of each hadron involved. Due to conservation of energy and momentum, the kaon is bound to the condition $K = \Lambda - P = \bar P - \bar\Lambda$.
-\begin{align}
-	P &= (-|\bm p_{cm}| \cos \theta,\: |\bm p_{cm}| \sin \theta,\: 0,\: \ii E_{cm})\\
-	\bar P &= (|\bm p_{cm}| \cos \theta,\: -|\bm p_{cm}| \sin \theta,\: 0,\: \ii E_{cm})\\
-	\Lambda &= (-\Lambda_x,\: 0,\: 0,\: \ii E_{cm})\\
-	\bar\Lambda &= (\Lambda_x,\: 0,\: 0,\: \ii E_{cm})\\
-	K &= (|\bm p_{cm}| \cos \theta - \Lambda_x,\: -|\bm p_{cm}| \sin \theta,\: 0,\: 0)
-\end{align}
-The center of mass energy $E_{cm}$ is shared by every hadron except the kaon, which carries no energy and is thereby off-shell and a virtual exchange particle.
+\chapter{Numerical Methods}
+\section{Integration}
+\section{Software}
+
 \end{document}

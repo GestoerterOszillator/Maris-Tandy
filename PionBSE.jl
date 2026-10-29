@@ -22,7 +22,11 @@ const gamma_m = 0.48 # 12/(33 - 2 * Nf{4}) = 0.48
 const mu = 19.0
 const C_f = 4/3
 
-function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, angular_steps::Int = 64)
+alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
+alpha_IR(k2, w::Float64, D::Float64) = D/w^6 * pi * k2 * exp(-k2 / w^2)
+alpha(k2; w::Float64 = 0.4, D::Float64 = 0.93312) = alpha_IR(k2, w, D) + alpha_UV(k2)
+
+function QuarkDSE(PV::Bool; radial_steps::Int = 256, angular_steps::Int = 64)
     x, w_x = gausslegendre(radial_steps)
     z, w_z = gausschebyshevu(angular_steps)
 
@@ -35,10 +39,6 @@ function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, ang
     Z_4m = 0.7 * m
 
     k2(p::ComplexF64, q::Float64, z::Float64) = p^2 + q^2 - 2*p*q*z
-
-    alpha_UV(k2::ComplexF64) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
-    alpha_IR(k2::ComplexF64) = D/w^6 * pi * k2 * exp(-k2 / w^2)
-    alpha(k2::ComplexF64) = alpha_IR(k2) + alpha_UV(k2)
 
     function z_intAA(p::ComplexF64, q::Float64)
         if PV == true
@@ -109,13 +109,10 @@ function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, ang
     end
 
     max_iter = 50
-    progress = Progress(41, desc = "Quark DSE:")
 
     for i in 1:max_iter
         A, B, Z_2, Z_4m, max_error = update(A, B, Z_2, Z_4m)
-        next!(progress)
         if max_error < 1e-8
-            println()
             break
         end
         if i == max_iter
@@ -128,7 +125,7 @@ function QuarkDSE(w::Float64, D::Float64, PV::Bool; radial_steps::Int = 256, ang
     return t, A_func, B_func, Z_2, Z_4m
 end
 
-@time t, A, B, Z_2, Z_4m = QuarkDSE(0.4, 0.93312, false)
+t, A, B, Z_2, Z_4m = QuarkDSE(false)
 
 plot(exp.(t), real.(A.(exp.(t))), xaxis=:log10, xlims = (epsilon2, Lambda2), ylims = (0, 2.0), 
     yticks = 0.4:0.4:2.0)
@@ -308,15 +305,12 @@ function build_AB(M, radial_steps, angular_steps)
     return Ap, Am, Bp, Bm
 end
 
-function entries(Func, M, p2, q2, z, Aplus, Aminus, Bplus, Bminus; w = 0.4, D = 0.93312, y_steps = 32, beta = pi/4)
+function entries(Func, M, p2, q2, z, Aplus, Aminus, Bplus, Bminus; y_steps = 32, beta = pi/4)
     pP = im*M*sqrt(p2)*cos(beta)
     Pq = im*M*sqrt(q2)*z
     pq(y) = sqrt(p2*q2)*(sin(beta)*y*sqrt(1-z^2) + cos(beta)*z)
     qplus2 = q2 + Pq - M^2/4
     qminus2 = q2 - Pq - M^2/4
-    alpha_UV(k2) = 2pi * gamma_m * (1 - exp(-k2)) / (k2 * log(exp(2)-1 + (1 + k2/Lambda_QCD^2)^2))
-    alpha_IR(k2) = D/w^6 * pi * k2 * exp(-k2 / w^2)
-    alpha(k2) = alpha_IR(k2) + alpha_UV(k2)
     k2_val(y) = p2 + q2 - 2*pq(y)
     y, w_y = gausslegendre(y_steps)
     y_integral = sum(@. w_y * alpha(k2_val(y)) * Func(p2, q2, -M^2, pP, pq(y), Pq, Aplus, Aminus, Bplus, Bminus))
@@ -342,6 +336,21 @@ function build_kappa(Func, M, Ap, Am, Bp, Bm, radial_steps, angular_steps)
     end
 
     return Kappa
+end
+
+function pwm(M; max_iter = 200_000, tol = 1e-10)
+    v = randn(eltype(M), size(M, 1))
+    v ./= norm(v)
+    w = M * v
+    for _ in 1:max_iter
+        λ = dot(v, w)
+        if norm(w - λ*v) < tol * abs(λ)
+            return λ, v
+        end
+        v = w / norm(w)
+        w = M * v
+    end
+    error("Reached max_iter")
 end
 
 function lambda(M; radial_steps::Int = 64, angular_steps::Int = 16)
@@ -386,8 +395,9 @@ function lambda(M; radial_steps::Int = 64, angular_steps::Int = 16)
              kGE kGF kGG kGH;
              kHE kHF kHG kHH]
 
-    states = eigen(Kappa)
-    return real(states.values[end]), real.(states.vectors[:, end])
+    return real.(pwm(Kappa))
+    # states = eigen(Kappa)
+    # return real(states.values[end]), real.(states.vectors[:, end])
 end
 
-@time find_zero(M -> lambda(M)[1] - 1, 0.1408955741336375)
+@time find_zero(M -> lambda(M)[1] - 1, 0.14; xrtol = 1e-5)
